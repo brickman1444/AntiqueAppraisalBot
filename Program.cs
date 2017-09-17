@@ -11,7 +11,14 @@ namespace AppraisalBot
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create("http://metmuseum.org/api/collection/collectionlisting?offset=0&pageSize=0&perPage=100&sortBy=Relevance&sortOrder=asc");
+            string responseText = RunWebRequest("http://metmuseum.org/api/collection/collectionlisting?offset=0&pageSize=0&perPage=100&sortBy=Relevance&sortOrder=asc");
+
+            Console.WriteLine(responseText);
+        }
+
+        static string RunWebRequest(string url)
+        {
+            HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
 
             HttpWebResponse response = (HttpWebResponse)myReq.GetResponse();
 
@@ -21,17 +28,14 @@ namespace AppraisalBot
             StreamReader readStream = new StreamReader(receiveStream, encode);
             Console.WriteLine("\r\nResponse stream received.");
 
-            string line;
-            while ((line = readStream.ReadLine()) != null)
-            {
-                Console.WriteLine(line);
-            }
+            string responseText = readStream.ReadToEnd();
 
-            Console.WriteLine("");
             // Releases the resources of the response.
             response.Close();
             // Releases the resources of the Stream.
             readStream.Close();
+
+            return responseText;
         }
     }
 }
