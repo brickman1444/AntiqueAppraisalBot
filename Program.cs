@@ -86,6 +86,11 @@ namespace AppraisalBot
                     {
                         Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
                     }
+
+                    foreach ( string tag in analysisResult.Description.Tags )
+                    {
+                        Console.WriteLine( "Tag: " + tag );
+                    }
                     
                     foreach ( Category category in analysisResult.Categories )
                     {
@@ -131,7 +136,21 @@ namespace AppraisalBot
 
         static string GetCollectionListing(int numItems, int offset)
         {
-            string url = "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc&material=Bags";
+            string[] materials = {
+                "Bags",
+                "Jewelry",
+                "Sculpture",
+                "Bowls",
+                "Furniture",
+                "Musical Instruments",
+                "Scarabs",
+                "Vessels"
+            };
+
+            Random rnd = new Random();
+            string material = materials[ rnd.Next(0, materials.Length)];
+
+            string url = "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc&material=" + material;
 
             HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
 
