@@ -2,8 +2,13 @@
 using System.Net;
 using System.IO;
 using System.Text;
-using Newtonsoft.Json;
+using System.Threading.Tasks;
 using System.Collections.Generic;
+
+using Newtonsoft.Json;
+
+using Microsoft.ProjectOxford.Vision;
+using Microsoft.ProjectOxford.Vision.Contract;
 
 namespace AppraisalBot
 {
@@ -41,7 +46,7 @@ namespace AppraisalBot
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            int numItems = 100;
+            int numItems = 5;
 
             Random rnd = new Random();
             int collectionOffset = rnd.Next(0,1950);
@@ -49,7 +54,7 @@ namespace AppraisalBot
             string responseText = GetCollectionListing( numItems, collectionOffset );
             MetResponse responseObject = JsonConvert.DeserializeObject<MetResponse>(responseText);
 
-            Console.WriteLine( "Found " + responseObject.results.Count + "results" );
+            Console.WriteLine( "Found " + responseObject.results.Count + " results" );
 
             for ( int i = 0; i < responseObject.results.Count; i++ )
             {
@@ -102,6 +107,23 @@ namespace AppraisalBot
             catch (Exception e)
             {
                 Console.WriteLine("exception thrown during get for " + url);
+            }
+        }
+
+        static async Task<AnalysisResult> AnalyzeImage(string filepath)
+        {
+                VisionServiceClient VisionServiceClient = new VisionServiceClient("subscriptionkey");
+            Console.WriteLine("VisionServiceClient is created");
+
+            using (Stream imageFileStream = File.OpenRead(filepath))
+            {
+                //
+                // Analyze the image for all visual features
+                //
+                Console.WriteLine("Calling VisionServiceClient.AnalyzeImageAsync()...");
+            VisualFeature[] visualFeatures = new VisualFeature[] { VisualFeature.Adult, VisualFeature.Categories, VisualFeature.Color, VisualFeature.Description, VisualFeature.Faces, VisualFeature.ImageType, VisualFeature.Tags };
+                AnalysisResult analysisResult = await VisionServiceClient.AnalyzeImageAsync(imageFileStream, visualFeatures);
+                return analysisResult;
             }
         }
     }
