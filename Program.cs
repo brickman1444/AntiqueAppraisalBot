@@ -10,6 +10,9 @@ using Newtonsoft.Json;
 using Microsoft.ProjectOxford.Vision;
 using Microsoft.ProjectOxford.Vision.Contract;
 
+using System.Drawing;
+using System.Drawing.Imaging;
+
 namespace AppraisalBot
 {
     class MetResponse
@@ -88,10 +91,40 @@ namespace AppraisalBot
                     {
                         Console.WriteLine( "Category: " + category.Name + " " + category.Score);
                     }
+
+                    Bitmap bitmap = (Bitmap)Image.FromFile(fileLocation);
+
+                    Graphics graphics = Graphics.FromImage(bitmap);
+
+                    // Create font and brush.
+                    Font drawFont = new Font("Arial", 10, FontStyle.Bold);
+                    SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.White);
+                    graphics.DrawString(analysisResult.Description.Captions[0].Text, drawFont, drawBrush, 0, 0);
+
+                    bitmap.Save(@"images\imageWithCaption" + i + ".jpg");
                 
                 }
                 
             }
+
+
+
+            // FileStream imageWriterStream = new FileStream(@"images\image0.jpg", FileMode.Open, FileAccess.Read);
+            // Image image = Image.FromStream(imageWriterStream);
+            // imageWriterStream.Close();
+
+            // // //Bitmap b = new Bitmap(image);
+            // // Graphics graphics = Graphics.FromImage(image);
+
+            // // // Create font and brush.
+            // // Font drawFont = new Font("Arial", 16);
+            // // SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.Black);
+            // // graphics.DrawString("Hello", drawFont, drawBrush, 0, 0);
+
+            // image.Save(@"images\image0.jpg", ImageFormat.Jpeg);
+
+            // image.Dispose();
+            // //b.Dispose();
 
             Console.WriteLine("Done");
         }
