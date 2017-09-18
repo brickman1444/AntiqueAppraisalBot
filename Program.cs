@@ -41,18 +41,27 @@ namespace AppraisalBot
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            string responseText = GetCollectionListing();
+            int numItems = 100;
+
+            Random rnd = new Random();
+            int collectionOffset = rnd.Next(0,1950);
+
+            string responseText = GetCollectionListing( numItems, collectionOffset );
             MetResponse responseObject = JsonConvert.DeserializeObject<MetResponse>(responseText);
+
+            Console.WriteLine( "Found " + responseObject.results.Count + "results" );
 
             for ( int i = 0; i < responseObject.results.Count; i++ )
             {
                 DownloadImage(responseObject.results[i].image, "images/image" + i + ".jpg");
             }
+
+            Console.WriteLine("Done");
         }
 
-        static string GetCollectionListing()
+        static string GetCollectionListing(int numItems, int offset)
         {
-            string url = "http://metmuseum.org/api/collection/collectionlisting?offset=0&pageSize=0&perPage=20&sortBy=Relevance&sortOrder=asc";
+            string url = "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc";
 
             HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
 
