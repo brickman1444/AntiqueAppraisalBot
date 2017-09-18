@@ -60,7 +60,7 @@ namespace AppraisalBot
                 computerVisionKey = fs.ReadToEnd();
             }
 
-            int numItems = 1;
+            int numItems = 5;
 
             Random rnd = new Random();
             int collectionOffset = rnd.Next(0,1950);
@@ -73,18 +73,24 @@ namespace AppraisalBot
             for ( int i = 0; i < responseObject.results.Count; i++ )
             {
                 string fileLocation = "images/image" + i + ".jpg";
-                DownloadImage(responseObject.results[i].image, fileLocation );
-                AnalysisResult analysisResult = AnalyzeImage( fileLocation ).GetAwaiter().GetResult();
-
-                foreach ( Caption caption in analysisResult.Description.Captions )
+                bool success = DownloadImage(responseObject.results[i].image, fileLocation );
+                bool doAnalysis = true;
+                if (success && doAnalysis)
                 {
-                    Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
+                    AnalysisResult analysisResult = AnalyzeImage( fileLocation ).GetAwaiter().GetResult();
+
+                    foreach ( Caption caption in analysisResult.Description.Captions )
+                    {
+                        Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
+                    }
+                    
+                    foreach ( Category category in analysisResult.Categories )
+                    {
+                        Console.WriteLine( "Category: " + category.Name + " " + category.Score);
+                    }
+                
                 }
                 
-                foreach ( Category category in analysisResult.Categories )
-                {
-                    Console.WriteLine( "Category: " + category.Name + " " + category.Score);
-                }
             }
 
             Console.WriteLine("Done");
@@ -92,7 +98,7 @@ namespace AppraisalBot
 
         static string GetCollectionListing(int numItems, int offset)
         {
-            string url = "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc";
+            string url = "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc&material=Bags";
 
             HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
 
@@ -114,7 +120,7 @@ namespace AppraisalBot
             return responseText;
         }
 
-        static void DownloadImage(string url, string outputLocation)
+        static bool DownloadImage(string url, string outputLocation)
         {
             try 
             {
@@ -129,10 +135,12 @@ namespace AppraisalBot
                         }
                     }
                 }
+                return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine("exception thrown during get for " + url);
+                return false;
             }
         }
 
