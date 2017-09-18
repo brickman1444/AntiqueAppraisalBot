@@ -75,6 +75,16 @@ namespace AppraisalBot
                 string fileLocation = "images/image" + i + ".jpg";
                 DownloadImage(responseObject.results[i].image, fileLocation );
                 AnalysisResult analysisResult = AnalyzeImage( fileLocation ).GetAwaiter().GetResult();
+
+                foreach ( Caption caption in analysisResult.Description.Captions )
+                {
+                    Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
+                }
+                
+                foreach ( Category category in analysisResult.Categories )
+                {
+                    Console.WriteLine( "Category: " + category.Name + " " + category.Score);
+                }
             }
 
             Console.WriteLine("Done");
