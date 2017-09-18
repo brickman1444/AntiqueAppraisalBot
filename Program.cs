@@ -43,6 +43,12 @@ namespace AppraisalBot
         public string galleryInformation;
     }
 
+    struct PriceRange
+    {
+        public int lowPrice;
+        public int highPrice;
+    }
+
     class Program
     {
         static string computerVisionKey = "";
@@ -99,12 +105,16 @@ namespace AppraisalBot
 
                     Bitmap bitmap = (Bitmap)Image.FromFile(fileLocation);
 
+                    PriceRange priceRange = GetPriceRange( analysisResult.Description.Captions[0].Text, bitmap, analysisResult.Description.Captions[0].Confidence );
+
+                    string fullCaption = analysisResult.Description.Captions[0].Text + ": $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
+
                     Graphics graphics = Graphics.FromImage(bitmap);
 
                     // Create font and brush.
                     Font drawFont = new Font("Arial", 10, FontStyle.Bold);
                     SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.White);
-                    graphics.DrawString(analysisResult.Description.Captions[0].Text, drawFont, drawBrush, 0, 0);
+                    graphics.DrawString(fullCaption, drawFont, drawBrush, 0, 0);
 
                     bitmap.Save(@"images\imageWithCaption" + i + ".jpg");
                 
@@ -211,6 +221,24 @@ namespace AppraisalBot
                 AnalysisResult analysisResult = await VisionServiceClient.AnalyzeImageAsync(imageFileStream, visualFeatures);
                 return analysisResult;
             }
+        }
+
+        static PriceRange GetPriceRange(string caption, Image image, double confidence)
+        {
+            PriceRange priceRange;
+            priceRange.lowPrice = 0;
+            priceRange.highPrice = 0;
+
+            foreach ( char c in caption )
+            {
+                priceRange.highPrice += c;
+            }
+
+            priceRange.highPrice += image.Width + image.Height;
+
+            priceRange.lowPrice = (int)(priceRange.highPrice * confidence);
+
+            return priceRange;
         }
     }
 }
