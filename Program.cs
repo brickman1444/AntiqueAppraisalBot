@@ -105,9 +105,14 @@ namespace AppraisalBot
 
                     Bitmap bitmap = (Bitmap)Image.FromFile(fileLocation);
 
-                    PriceRange priceRange = GetPriceRange( analysisResult.Description.Captions[0].Text, bitmap, analysisResult.Description.Captions[0].Confidence );
+                    string descriptionText = analysisResult.Description.Captions[0].Text;
+                    descriptionText = descriptionText.Replace("a close up of ", "");
+                    descriptionText = descriptionText.Replace(" sitting on a table", "");
+                    descriptionText = descriptionText.Replace(" on a table", "");
 
-                    string fullCaption = analysisResult.Description.Captions[0].Text + ": $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
+                    PriceRange priceRange = GetPriceRange( descriptionText, bitmap, analysisResult.Description.Captions[0].Confidence );
+
+                    string fullCaption = descriptionText + ": $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
 
                     Graphics graphics = Graphics.FromImage(bitmap);
 
@@ -154,11 +159,15 @@ namespace AppraisalBot
                 "Furniture",
                 "Musical Instruments",
                 "Scarabs",
-                "Vessels"
+                "Vessels",
+                "Ceramics",
+                "Wood"
             };
 
             Random rnd = new Random();
             string material = materials[ rnd.Next(0, materials.Length)];
+
+            Console.WriteLine("Material: " + material);
 
             string url = "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc&material=" + material;
 
