@@ -41,15 +41,16 @@ namespace AppraisalBot
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            string responseText = RunWebRequest("http://metmuseum.org/api/collection/collectionlisting?offset=0&pageSize=0&perPage=100&sortBy=Relevance&sortOrder=asc");
-
-            Console.WriteLine(responseText);
-
+            string responseText = GetCollectionListing()
             MetResponse responseObject = JsonConvert.DeserializeObject<MetResponse>(responseText);
+
+            DownloadImage();
         }
 
-        static string RunWebRequest(string url)
+        static string GetCollectionListing()
         {
+            string url = "http://metmuseum.org/api/collection/collectionlisting?offset=0&pageSize=0&perPage=100&sortBy=Relevance&sortOrder=asc";
+
             HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
 
             HttpWebResponse response = (HttpWebResponse)myReq.GetResponse();
@@ -68,6 +69,22 @@ namespace AppraisalBot
             readStream.Close();
 
             return responseText;
+        }
+
+        static void DownloadImage()
+        {
+            HttpWebRequest lxRequest = (HttpWebRequest)WebRequest.Create(
+"http://www.productimageswebsite.com/images/stock_jpgs/34891.jpg");
+
+            // returned values are returned as a stream, then read into a string
+            using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponse()){
+                using (BinaryReader reader = new BinaryReader(lxResponse.GetResponseStream())) {
+                    Byte[] lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
+                    using (FileStream lxFS = new FileStream("image.jpg", FileMode.Create)) {
+                        lxFS.Write(lnByte, 0, lnByte.Length);
+                    }
+                }
+            }
         }
     }
 }
