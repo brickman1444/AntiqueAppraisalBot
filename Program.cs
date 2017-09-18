@@ -42,6 +42,8 @@ namespace AppraisalBot
 
     class Program
     {
+        static string computerVisionKey = "";
+
         static void Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -53,7 +55,12 @@ namespace AppraisalBot
                 File.Delete(filePath);
             }
 
-            int numItems = 5;
+            using ( StreamReader fs = new StreamReader( "localconfig/computervisionkey.txt" ) )
+            {
+                computerVisionKey = fs.ReadToEnd();
+            }
+
+            int numItems = 1;
 
             Random rnd = new Random();
             int collectionOffset = rnd.Next(0,1950);
@@ -65,7 +72,9 @@ namespace AppraisalBot
 
             for ( int i = 0; i < responseObject.results.Count; i++ )
             {
-                DownloadImage(responseObject.results[i].image, "images/image" + i + ".jpg");
+                string fileLocation = "images/image" + i + ".jpg";
+                DownloadImage(responseObject.results[i].image, fileLocation );
+                AnalysisResult analysisResult = AnalyzeImage( fileLocation ).GetAwaiter().GetResult();
             }
 
             Console.WriteLine("Done");
@@ -119,7 +128,7 @@ namespace AppraisalBot
 
         static async Task<AnalysisResult> AnalyzeImage(string filepath)
         {
-                VisionServiceClient VisionServiceClient = new VisionServiceClient("subscriptionkey");
+                VisionServiceClient VisionServiceClient = new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
             Console.WriteLine("VisionServiceClient is created");
 
             using (Stream imageFileStream = File.OpenRead(filepath))
