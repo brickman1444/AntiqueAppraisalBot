@@ -46,6 +46,13 @@ namespace AppraisalBot
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
+            // Delete the previous output
+            string[] filePaths = Directory.GetFiles(@"images\");
+            foreach (string filePath in filePaths)
+            {
+                File.Delete(filePath);
+            }
+
             int numItems = 5;
 
             Random rnd = new Random();
