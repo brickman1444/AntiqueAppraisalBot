@@ -41,15 +41,18 @@ namespace AppraisalBot
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            string responseText = GetCollectionListing()
+            string responseText = GetCollectionListing();
             MetResponse responseObject = JsonConvert.DeserializeObject<MetResponse>(responseText);
 
-            DownloadImage();
+            for ( int i = 0; i < responseObject.results.Count; i++ )
+            {
+                DownloadImage(responseObject.results[i].image, "images/image" + i + ".jpg");
+            }
         }
 
         static string GetCollectionListing()
         {
-            string url = "http://metmuseum.org/api/collection/collectionlisting?offset=0&pageSize=0&perPage=100&sortBy=Relevance&sortOrder=asc";
+            string url = "http://metmuseum.org/api/collection/collectionlisting?offset=0&pageSize=0&perPage=20&sortBy=Relevance&sortOrder=asc";
 
             HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
 
@@ -71,19 +74,25 @@ namespace AppraisalBot
             return responseText;
         }
 
-        static void DownloadImage()
+        static void DownloadImage(string url, string outputLocation)
         {
-            HttpWebRequest lxRequest = (HttpWebRequest)WebRequest.Create(
-"http://www.productimageswebsite.com/images/stock_jpgs/34891.jpg");
+            try 
+            {
+                HttpWebRequest lxRequest = (HttpWebRequest)WebRequest.Create(url);
 
-            // returned values are returned as a stream, then read into a string
-            using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponse()){
-                using (BinaryReader reader = new BinaryReader(lxResponse.GetResponseStream())) {
-                    Byte[] lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
-                    using (FileStream lxFS = new FileStream("image.jpg", FileMode.Create)) {
-                        lxFS.Write(lnByte, 0, lnByte.Length);
+                // returned values are returned as a stream, then read into a string
+                using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponse()){
+                    using (BinaryReader reader = new BinaryReader(lxResponse.GetResponseStream())) {
+                        Byte[] lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
+                        using (FileStream lxFS = new FileStream(outputLocation, FileMode.OpenOrCreate)) {
+                            lxFS.Write(lnByte, 0, lnByte.Length);
+                        }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("exception thrown during get for " + url);
             }
         }
     }
