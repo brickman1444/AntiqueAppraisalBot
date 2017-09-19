@@ -146,14 +146,18 @@ namespace AppraisalBot
                 using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponse()){
                     
                     Bitmap image = new Bitmap( lxResponse.GetResponseStream() );
-                    return image;
+
+                    if (image.Width >= 250)
+                    {
+                        return image;
+                    }
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine("exception thrown during get for " + url);
-                return null;
             }
+            return null;
         }
 
         static async Task<AnalysisResult> AnalyzeImage(Bitmap sourceImage)
@@ -244,6 +248,9 @@ namespace AppraisalBot
             descriptionText = descriptionText.Replace(" sitting on a table", "");
             descriptionText = descriptionText.Replace(" on a table", "");
 
+            // Capitalize the first letter
+            descriptionText = char.ToUpper(descriptionText[0]) + descriptionText.Substring(1);
+
             return descriptionText;
         }
 
@@ -258,7 +265,7 @@ namespace AppraisalBot
 
             PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, confidence );
 
-            string fullCaption = descriptionText + ": $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
+            string fullCaption = descriptionText + "\n $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
 
             Bitmap footerImage = (Bitmap)Image.FromFile(@"sourceArt/footer.png");
 
@@ -268,10 +275,12 @@ namespace AppraisalBot
 
             graphics.DrawImage( footerImage, 0, footerOriginY, drawnBitmap.Width, footerHeight );
 
-            float textOriginY = footerOriginY + 30.0f * scale;
+            float textOriginY = footerOriginY + 25.0f * scale;
             float textOriginX = 200.0f * scale;
 
-            Font drawFont = new Font("Arial", 10, FontStyle.Bold);
+            int fontSize = (int)(25 * scale);
+
+            Font drawFont = new Font("Arial", fontSize, FontStyle.Bold);
             SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.White);
             graphics.DrawString(fullCaption, drawFont, drawBrush, textOriginX, textOriginY);
 
