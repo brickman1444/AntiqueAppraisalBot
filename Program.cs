@@ -307,8 +307,10 @@ namespace AppraisalBot
             int fontSize = (int)(25 * scale);
 
             Font drawFont = new Font("Arial", fontSize, FontStyle.Bold);
-            SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.White);
-            graphics.DrawString(fullCaption, drawFont, drawBrush, textOriginX, textOriginY);
+            SolidBrush grayBrush = new SolidBrush(System.Drawing.Color.MidnightBlue);
+            graphics.DrawString(fullCaption, drawFont, grayBrush, textOriginX + 1, textOriginY + 1);
+            SolidBrush whiteBrush = new SolidBrush(System.Drawing.Color.White);
+            graphics.DrawString(fullCaption, drawFont, whiteBrush, textOriginX, textOriginY);
 
             return drawnBitmap;
         }
