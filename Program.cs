@@ -88,69 +88,10 @@ namespace AppraisalBot
                 {
                     AnalysisResult analysisResult = AnalyzeImage( fileLocation ).GetAwaiter().GetResult();
 
-                    foreach ( Caption caption in analysisResult.Description.Captions )
-                    {
-                        Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
-                    }
-
-                    foreach ( string tag in analysisResult.Description.Tags )
-                    {
-                        Console.WriteLine( "Tag: " + tag );
-                    }
-                    
-                    if ( analysisResult.Categories != null )
-                    {
-                        foreach ( Category category in analysisResult.Categories )
-                        {
-                            Console.WriteLine( "Category: " + category.Name + " " + category.Score);
-                        }
-                    }
-
-                    Bitmap loadedBitmap = (Bitmap)Image.FromFile(fileLocation);
-
-                    // There's some exception that's thrown when creating a Graphics from an "indexed bitmap"
-                    // which some of the images are. You have to create a new bitmap and that works.
-                    Bitmap drawnBitmap = new Bitmap( loadedBitmap );
-                    Graphics graphics = Graphics.FromImage(drawnBitmap);
-
-                    string descriptionText = analysisResult.Description.Captions[0].Text;
-                    descriptionText = descriptionText.Replace("a close up of ", "");
-                    descriptionText = descriptionText.Replace(" sitting on a table", "");
-                    descriptionText = descriptionText.Replace(" on a table", "");
-
-                    PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, analysisResult.Description.Captions[0].Confidence );
-
-                    string fullCaption = descriptionText + ": $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
-
-                    // Create font and brush.
-                    Font drawFont = new Font("Arial", 10, FontStyle.Bold);
-                    SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.White);
-                    graphics.DrawString(fullCaption, drawFont, drawBrush, 0, 0);
-
-                    drawnBitmap.Save(@"images\imageWithCaption" + i + ".jpg");
-                
+                    CreateAppraisal( fileLocation, @"images/imageAppraisal" + i + ".jpg", analysisResult );
                 }
                 
             }
-
-
-
-            // FileStream imageWriterStream = new FileStream(@"images\image0.jpg", FileMode.Open, FileAccess.Read);
-            // Image image = Image.FromStream(imageWriterStream);
-            // imageWriterStream.Close();
-
-            // // //Bitmap b = new Bitmap(image);
-            // // Graphics graphics = Graphics.FromImage(image);
-
-            // // // Create font and brush.
-            // // Font drawFont = new Font("Arial", 16);
-            // // SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.Black);
-            // // graphics.DrawString("Hello", drawFont, drawBrush, 0, 0);
-
-            // image.Save(@"images\image0.jpg", ImageFormat.Jpeg);
-
-            // image.Dispose();
-            // //b.Dispose();
 
             Console.WriteLine("Done");
         }
@@ -254,6 +195,50 @@ namespace AppraisalBot
             priceRange.lowPrice = (int)(priceRange.highPrice * confidence);
 
             return priceRange;
+        }
+
+        static void CreateAppraisal( string sourceFileLocation, string destinationFilePath, AnalysisResult analysisResult )
+        {
+            foreach ( Caption caption in analysisResult.Description.Captions )
+            {
+                Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
+            }
+
+            // foreach ( string tag in analysisResult.Description.Tags )
+            // {
+            //     Console.WriteLine( "Tag: " + tag );
+            // }
+            
+            // if ( analysisResult.Categories != null )
+            // {
+            //     foreach ( Category category in analysisResult.Categories )
+            //     {
+            //         Console.WriteLine( "Category: " + category.Name + " " + category.Score);
+            //     }
+            // }
+
+            Bitmap loadedBitmap = (Bitmap)Image.FromFile(sourceFileLocation);
+
+            // There's some exception that's thrown when creating a Graphics from an "indexed bitmap"
+            // which some of the images are. You have to create a new bitmap and that works.
+            Bitmap drawnBitmap = new Bitmap( loadedBitmap );
+            Graphics graphics = Graphics.FromImage(drawnBitmap);
+
+            string descriptionText = analysisResult.Description.Captions[0].Text;
+            descriptionText = descriptionText.Replace("a close up of ", "");
+            descriptionText = descriptionText.Replace(" sitting on a table", "");
+            descriptionText = descriptionText.Replace(" on a table", "");
+
+            PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, analysisResult.Description.Captions[0].Confidence );
+
+            string fullCaption = descriptionText + ": $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
+
+            // Create font and brush.
+            Font drawFont = new Font("Arial", 10, FontStyle.Bold);
+            SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.White);
+            graphics.DrawString(fullCaption, drawFont, drawBrush, 0, 0);
+
+            drawnBitmap.Save( destinationFilePath );
         }
     }
 }
