@@ -263,17 +263,20 @@ namespace AppraisalBot
 
             string fullCaption = descriptionText + ": $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
 
-            // Create font and brush.
-            Font drawFont = new Font("Arial", 10, FontStyle.Bold);
-            SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.White);
-            graphics.DrawString(fullCaption, drawFont, drawBrush, 0, 0);
-
             Bitmap footerImage = (Bitmap)Image.FromFile(@"sourceArt/footer.png");
 
             float scale = (float)drawnBitmap.Width / (float)footerImage.Width;
             float footerHeight = scale * footerImage.Height;
+            float footerOriginY = drawnBitmap.Height - footerHeight;
 
-            graphics.DrawImage( footerImage, 0, drawnBitmap.Height - footerHeight, drawnBitmap.Width, footerHeight );
+            graphics.DrawImage( footerImage, 0, footerOriginY, drawnBitmap.Width, footerHeight );
+
+            float textOriginY = footerOriginY + 30.0f * scale;
+            float textOriginX = 200.0f * scale;
+
+            Font drawFont = new Font("Arial", 10, FontStyle.Bold);
+            SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.White);
+            graphics.DrawString(fullCaption, drawFont, drawBrush, textOriginX, textOriginY);
 
             return drawnBitmap;
         }
