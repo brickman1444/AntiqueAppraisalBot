@@ -184,7 +184,7 @@ namespace AppraisalBot
             }
         }
 
-        static PriceRange GetPriceRange(string caption, Image image, double confidence)
+        static PriceRange GetPriceRange(string caption, Bitmap image, double confidence)
         {
             PriceRange priceRange;
             priceRange.lowPrice = 0;
@@ -197,6 +197,13 @@ namespace AppraisalBot
 
             priceRange.highPrice += image.Width + image.Height;
 
+            System.Drawing.Color pixelSampleColor = image.GetPixel( image.Width / 2, image.Height / 2 );
+
+            float red = (float)pixelSampleColor.R / 255.0f;
+            float green = (float)pixelSampleColor.G / 255.0f;
+            float blue = (float)pixelSampleColor.B / 255.0f;
+            priceRange.highPrice *= (int)( 1.0f + red + green + blue );
+
             priceRange.lowPrice = (int)(priceRange.highPrice * confidence);
 
             return priceRange;
@@ -207,18 +214,7 @@ namespace AppraisalBot
             Caption caption = GetCaption( analysisResult );
             Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
 
-            // foreach ( string tag in analysisResult.Description.Tags )
-            // {
-            //     Console.WriteLine( "Tag: " + tag );
-            // }
-            
-            // if ( analysisResult.Categories != null )
-            // {
-            //     foreach ( Category category in analysisResult.Categories )
-            //     {
-            //         Console.WriteLine( "Category: " + category.Name + " " + category.Score);
-            //     }
-            // }
+            string descriptionText = GetDescription( caption );
 
             Bitmap loadedBitmap = (Bitmap)Image.FromFile(sourceFileLocation);
 
@@ -227,12 +223,7 @@ namespace AppraisalBot
             Bitmap drawnBitmap = new Bitmap( loadedBitmap );
             Graphics graphics = Graphics.FromImage(drawnBitmap);
 
-            string descriptionText = analysisResult.Description.Captions[0].Text;
-            descriptionText = descriptionText.Replace("a close up of ", "");
-            descriptionText = descriptionText.Replace(" sitting on a table", "");
-            descriptionText = descriptionText.Replace(" on a table", "");
-
-            PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, analysisResult.Description.Captions[0].Confidence );
+            PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, caption.Confidence );
 
             string fullCaption = descriptionText + ": $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
 
@@ -259,6 +250,17 @@ namespace AppraisalBot
             }
 
             return caption;
+        }
+
+        static string GetDescription( Caption caption )
+        {
+            // Filter and adjust the caption
+            string descriptionText = caption.Text;
+            descriptionText = descriptionText.Replace("a close up of ", "");
+            descriptionText = descriptionText.Replace(" sitting on a table", "");
+            descriptionText = descriptionText.Replace(" on a table", "");
+
+            return descriptionText;
         }
     }
 }
