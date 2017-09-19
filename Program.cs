@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 
 using Newtonsoft.Json;
 
@@ -69,7 +70,7 @@ namespace AppraisalBot
                 computerVisionKey = fs.ReadToEnd();
             }
 
-            int numItems = 5;
+            int numItems = 3;
 
             Random rnd = new Random();
             int collectionOffset = rnd.Next(0,1950);
@@ -105,7 +106,6 @@ namespace AppraisalBot
                 "Bowls",
                 "Furniture",
                 "Musical Instruments",
-                "Scarabs",
                 "Vessels",
                 "Ceramics",
                 "Wood"
@@ -173,7 +173,12 @@ namespace AppraisalBot
                 // Analyze the image for all visual features
                 //
                 Console.WriteLine("Calling VisionServiceClient.AnalyzeImageAsync()...");
-            VisualFeature[] visualFeatures = new VisualFeature[] { VisualFeature.Adult, VisualFeature.Categories, VisualFeature.Color, VisualFeature.Description, VisualFeature.Faces, VisualFeature.ImageType, VisualFeature.Tags };
+            VisualFeature[] visualFeatures = new VisualFeature[] { 
+                VisualFeature.Adult,
+                VisualFeature.Categories,
+                VisualFeature.Color,
+                VisualFeature.Description
+                };
                 AnalysisResult analysisResult = await VisionServiceClient.AnalyzeImageAsync(imageFileStream, visualFeatures);
                 return analysisResult;
             }
@@ -199,10 +204,8 @@ namespace AppraisalBot
 
         static void CreateAppraisal( string sourceFileLocation, string destinationFilePath, AnalysisResult analysisResult )
         {
-            foreach ( Caption caption in analysisResult.Description.Captions )
-            {
-                Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
-            }
+            Caption caption = GetCaption( analysisResult );
+            Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
 
             // foreach ( string tag in analysisResult.Description.Tags )
             // {
@@ -239,6 +242,23 @@ namespace AppraisalBot
             graphics.DrawString(fullCaption, drawFont, drawBrush, 0, 0);
 
             drawnBitmap.Save( destinationFilePath );
+        }
+
+        static Caption GetCaption( AnalysisResult analysisResult )
+        {
+            Caption caption = new Caption();
+            caption.Text = "Something";
+            caption.Confidence = 0.0001f;
+
+            foreach ( Caption c in analysisResult.Description.Captions )
+            {
+                if ( c.Confidence > caption.Confidence )
+                {
+                    caption = c;
+                }
+            }
+
+            return caption;
         }
     }
 }
