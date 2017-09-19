@@ -98,30 +98,36 @@ namespace AppraisalBot
                         Console.WriteLine( "Tag: " + tag );
                     }
                     
-                    foreach ( Category category in analysisResult.Categories )
+                    if ( analysisResult.Categories != null )
                     {
-                        Console.WriteLine( "Category: " + category.Name + " " + category.Score);
+                        foreach ( Category category in analysisResult.Categories )
+                        {
+                            Console.WriteLine( "Category: " + category.Name + " " + category.Score);
+                        }
                     }
 
-                    Bitmap bitmap = (Bitmap)Image.FromFile(fileLocation);
+                    Bitmap loadedBitmap = (Bitmap)Image.FromFile(fileLocation);
+
+                    // There's some exception that's thrown when creating a Graphics from an "indexed bitmap"
+                    // which some of the images are. You have to create a new bitmap and that works.
+                    Bitmap drawnBitmap = new Bitmap( loadedBitmap );
+                    Graphics graphics = Graphics.FromImage(drawnBitmap);
 
                     string descriptionText = analysisResult.Description.Captions[0].Text;
                     descriptionText = descriptionText.Replace("a close up of ", "");
                     descriptionText = descriptionText.Replace(" sitting on a table", "");
                     descriptionText = descriptionText.Replace(" on a table", "");
 
-                    PriceRange priceRange = GetPriceRange( descriptionText, bitmap, analysisResult.Description.Captions[0].Confidence );
+                    PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, analysisResult.Description.Captions[0].Confidence );
 
                     string fullCaption = descriptionText + ": $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
-
-                    Graphics graphics = Graphics.FromImage(bitmap);
 
                     // Create font and brush.
                     Font drawFont = new Font("Arial", 10, FontStyle.Bold);
                     SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.White);
                     graphics.DrawString(fullCaption, drawFont, drawBrush, 0, 0);
 
-                    bitmap.Save(@"images\imageWithCaption" + i + ".jpg");
+                    drawnBitmap.Save(@"images\imageWithCaption" + i + ".jpg");
                 
                 }
                 
