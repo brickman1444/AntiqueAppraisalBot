@@ -215,24 +215,11 @@ namespace AppraisalBot
             Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
 
             string descriptionText = GetDescription( caption );
+            float confidence = (float)caption.Confidence;
 
-            Bitmap loadedBitmap = (Bitmap)Image.FromFile(sourceFileLocation);
+            Bitmap composedImage = ComposeImage( sourceFileLocation, descriptionText, confidence );
 
-            // There's some exception that's thrown when creating a Graphics from an "indexed bitmap"
-            // which some of the images are. You have to create a new bitmap and that works.
-            Bitmap drawnBitmap = new Bitmap( loadedBitmap );
-            Graphics graphics = Graphics.FromImage(drawnBitmap);
-
-            PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, caption.Confidence );
-
-            string fullCaption = descriptionText + ": $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
-
-            // Create font and brush.
-            Font drawFont = new Font("Arial", 10, FontStyle.Bold);
-            SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.White);
-            graphics.DrawString(fullCaption, drawFont, drawBrush, 0, 0);
-
-            drawnBitmap.Save( destinationFilePath );
+            composedImage.Save( destinationFilePath );
         }
 
         static Caption GetCaption( AnalysisResult analysisResult )
@@ -261,6 +248,34 @@ namespace AppraisalBot
             descriptionText = descriptionText.Replace(" on a table", "");
 
             return descriptionText;
+        }
+
+        static Bitmap ComposeImage(string fileLocation, string descriptionText, float confidence)
+        {
+            Bitmap loadedBitmap = (Bitmap)Image.FromFile(fileLocation);
+
+            // There's some exception that's thrown when creating a Graphics from an "indexed bitmap"
+            // which some of the images are. You have to create a new bitmap and that works.
+            Bitmap drawnBitmap = new Bitmap( loadedBitmap );
+            Graphics graphics = Graphics.FromImage(drawnBitmap);
+
+            PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, confidence );
+
+            string fullCaption = descriptionText + ": $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
+
+            // Create font and brush.
+            Font drawFont = new Font("Arial", 10, FontStyle.Bold);
+            SolidBrush drawBrush = new SolidBrush(System.Drawing.Color.White);
+            graphics.DrawString(fullCaption, drawFont, drawBrush, 0, 0);
+
+            Bitmap footerImage = (Bitmap)Image.FromFile(@"sourceArt/footer.png");
+
+            float scale = (float)drawnBitmap.Width / (float)footerImage.Width;
+            float footerHeight = scale * footerImage.Height;
+
+            graphics.DrawImage( footerImage, 0, drawnBitmap.Height - footerHeight, drawnBitmap.Width, footerHeight );
+
+            return drawnBitmap;
         }
     }
 }
