@@ -81,7 +81,11 @@ namespace AppraisalBot
 
             for ( int i = 0; i < responseObject.results.Count; i++ )
             {
-                Bitmap image = DownloadImage(responseObject.results[i].image );
+                string smallImageUrl = responseObject.results[i].image;
+                int index = smallImageUrl.IndexOf( responseObject.results[i].largeImage.Substring(0,3) );
+                string largeImageUrl = smallImageUrl.Substring(0,index) + responseObject.results[i].largeImage;
+
+                Bitmap image = DownloadImage( largeImageUrl );
                 bool doAnalysis = true;
                 if (image != null && doAnalysis)
                 {
@@ -106,7 +110,8 @@ namespace AppraisalBot
                 "Musical Instruments",
                 "Vessels",
                 "Ceramics",
-                "Wood"
+                "Wood",
+                "Paintings",
             };
 
             Random rnd = new Random();
