@@ -81,14 +81,13 @@ namespace AppraisalBot
 
             for ( int i = 0; i < responseObject.results.Count; i++ )
             {
-                string fileLocation = "images/image" + i + ".jpg";
-                bool success = DownloadImage(responseObject.results[i].image, fileLocation );
+                Bitmap image = DownloadImage(responseObject.results[i].image );
                 bool doAnalysis = true;
-                if (success && doAnalysis)
+                if (image != null && doAnalysis)
                 {
-                    AnalysisResult analysisResult = AnalyzeImage( fileLocation ).GetAwaiter().GetResult();
+                    AnalysisResult analysisResult = AnalyzeImage( image ).GetAwaiter().GetResult();
 
-                    CreateAppraisal( fileLocation, @"images/imageAppraisal" + i + ".jpg", analysisResult );
+                    CreateAppraisal( image, @"images/image" + i + ".jpg", analysisResult );
                 }
                 
             }
@@ -113,7 +112,7 @@ namespace AppraisalBot
             Random rnd = new Random();
             string material = materials[ rnd.Next(0, materials.Length)];
 
-            Console.WriteLine("Material: " + material);
+            Console.WriteLine("Material: " + material + " offset: " + offset + " numItems: " + numItems);
 
             string url = "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc&material=" + material;
 
@@ -137,7 +136,7 @@ namespace AppraisalBot
             return responseText;
         }
 
-        static bool DownloadImage(string url, string outputLocation)
+        static Bitmap DownloadImage(string url)
         {
             try 
             {
@@ -145,29 +144,28 @@ namespace AppraisalBot
 
                 // returned values are returned as a stream, then read into a string
                 using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponse()){
-                    using (BinaryReader reader = new BinaryReader(lxResponse.GetResponseStream())) {
-                        Byte[] lnByte = reader.ReadBytes(1 * 1024 * 1024 * 10);
-                        using (FileStream lxFS = new FileStream(outputLocation, FileMode.OpenOrCreate)) {
-                            lxFS.Write(lnByte, 0, lnByte.Length);
-                        }
-                    }
+                    
+                    Bitmap image = new Bitmap( lxResponse.GetResponseStream() );
+                    return image;
                 }
-                return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine("exception thrown during get for " + url);
-                return false;
+                return null;
             }
         }
 
-        static async Task<AnalysisResult> AnalyzeImage(string filepath)
+        static async Task<AnalysisResult> AnalyzeImage(Bitmap sourceImage)
         {
                 VisionServiceClient VisionServiceClient = new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
             Console.WriteLine("VisionServiceClient is created");
 
-            using (Stream imageFileStream = File.OpenRead(filepath))
+            using (MemoryStream memoryStream = new MemoryStream())
             {
+                sourceImage.Save( memoryStream, sourceImage.RawFormat );
+                memoryStream.Position = 0;
+
                 //
                 // Analyze the image for all visual features
                 //
@@ -178,7 +176,7 @@ namespace AppraisalBot
                 VisualFeature.Color,
                 VisualFeature.Description
                 };
-                AnalysisResult analysisResult = await VisionServiceClient.AnalyzeImageAsync(imageFileStream, visualFeatures);
+                AnalysisResult analysisResult = await VisionServiceClient.AnalyzeImageAsync( memoryStream, visualFeatures);
                 return analysisResult;
             }
         }
@@ -208,7 +206,7 @@ namespace AppraisalBot
             return priceRange;
         }
 
-        static void CreateAppraisal( string sourceFileLocation, string destinationFilePath, AnalysisResult analysisResult )
+        static void CreateAppraisal( Bitmap sourceImage, string destinationFilePath, AnalysisResult analysisResult )
         {
             Caption caption = GetCaption( analysisResult );
             Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
@@ -216,7 +214,7 @@ namespace AppraisalBot
             string descriptionText = GetDescription( caption );
             float confidence = (float)caption.Confidence;
 
-            Bitmap composedImage = ComposeImage( sourceFileLocation, descriptionText, confidence );
+            Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence );
 
             composedImage.Save( destinationFilePath );
         }
@@ -249,9 +247,9 @@ namespace AppraisalBot
             return descriptionText;
         }
 
-        static Bitmap ComposeImage(string fileLocation, string descriptionText, float confidence)
+        static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence)
         {
-            Bitmap loadedBitmap = (Bitmap)Image.FromFile(fileLocation);
+            Bitmap loadedBitmap = sourceImage;
 
             // There's some exception that's thrown when creating a Graphics from an "indexed bitmap"
             // which some of the images are. You have to create a new bitmap and that works.
