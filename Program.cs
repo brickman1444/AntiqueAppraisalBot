@@ -81,6 +81,9 @@ namespace AppraisalBot
 
             for ( int i = 0; i < responseObject.results.Count; i++ )
             {
+                Console.WriteLine("small url: " + responseObject.results[i].image);
+                Console.WriteLine("large url: " + responseObject.results[i].largeImage );
+
                 string smallImageUrl = responseObject.results[i].image;
                 int index = smallImageUrl.IndexOf( responseObject.results[i].largeImage.Substring(0,3) );
                 string largeImageUrl = smallImageUrl.Substring(0,index) + responseObject.results[i].largeImage;
@@ -215,6 +218,23 @@ namespace AppraisalBot
             return priceRange;
         }
 
+        static int GetYear( Bitmap image )
+        {
+            int maxYear = 2017;
+            int minYear = 10;
+
+            System.Drawing.Color pixelSampleColor = image.GetPixel( image.Width / 3, image.Height / 3 );
+
+            float red = (float)pixelSampleColor.R / 255.0f;
+            float green = (float)pixelSampleColor.G / 255.0f;
+            float blue = (float)pixelSampleColor.B / 255.0f;
+            
+            float scale = (red + green + blue) / 3.0f;
+
+            int year = (int)(minYear + (maxYear - minYear) * scale);
+            return year;
+        }
+
         static void CreateAppraisal( Bitmap sourceImage, string destinationFilePath, AnalysisResult analysisResult )
         {
             Caption caption = GetCaption( analysisResult );
@@ -269,8 +289,9 @@ namespace AppraisalBot
             Graphics graphics = Graphics.FromImage(drawnBitmap);
 
             PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, confidence );
+            int year = GetYear( drawnBitmap );
 
-            string fullCaption = descriptionText + "\n $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
+            string fullCaption = descriptionText + " (ca. " + year + ")\n $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
 
             Bitmap footerImage = (Bitmap)Image.FromFile(@"sourceArt/footer.png");
 
