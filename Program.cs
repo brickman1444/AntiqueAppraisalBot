@@ -69,7 +69,7 @@ namespace AppraisalBot
                 computerVisionKey = fs.ReadToEnd();
             }
 
-            int numItems = 3;
+            int numItems = 2;
 
             Random rnd = new Random();
             int collectionOffset = rnd.Next(0,1950);
@@ -115,7 +115,7 @@ namespace AppraisalBot
                 "Sculpture",
                 "Bowls",
                 "Furniture",
-                "Musical Instruments",
+                "Musical%20instruments",
                 "Vessels",
                 "Ceramics",
                 "Wood",
@@ -225,10 +225,17 @@ namespace AppraisalBot
             return priceRange;
         }
 
-        static int GetYear( Bitmap image )
+        static int GetYear( Bitmap image, bool isOld )
         {
             int maxYear = 2017;
             int minYear = 10;
+
+            if ( isOld )
+            {
+                // Make a guess that old stuff isn't modern but also isnt' ancient
+                maxYear = 1900;
+                minYear = 1000;
+            }
 
             System.Drawing.Color pixelSampleColor = image.GetPixel( image.Width / 3, image.Height / 3 );
 
@@ -249,8 +256,10 @@ namespace AppraisalBot
 
             string descriptionText = GetDescription( caption );
             float confidence = (float)caption.Confidence;
+            bool isOld = IsOld( analysisResult );
+            Console.WriteLine( "Is Old: " + isOld );
 
-            Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence );
+            Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld );
 
             composedImage.Save( destinationFilePath );
         }
@@ -272,6 +281,11 @@ namespace AppraisalBot
             return caption;
         }
 
+        static bool IsOld( AnalysisResult analysisResult )
+        {
+            return Array.Exists( analysisResult.Description.Tags, x => x == "old" );
+        }
+
         static string GetDescription( Caption caption )
         {
             // Filter and adjust the caption
@@ -286,7 +300,7 @@ namespace AppraisalBot
             return descriptionText;
         }
 
-        static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence)
+        static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld)
         {
             Bitmap loadedBitmap = sourceImage;
 
@@ -296,7 +310,7 @@ namespace AppraisalBot
             Graphics graphics = Graphics.FromImage(drawnBitmap);
 
             PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, confidence );
-            int year = GetYear( drawnBitmap );
+            int year = GetYear( drawnBitmap, isOld );
 
             string fullCaption = descriptionText + " (ca. " + year + ")\n $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
 
