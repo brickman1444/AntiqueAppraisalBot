@@ -94,6 +94,11 @@ namespace AppraisalBot
                 {
                     AnalysisResult analysisResult = AnalyzeImage( image ).GetAwaiter().GetResult();
 
+                    foreach ( string tag in analysisResult.Description.Tags )
+                    {
+                        Console.WriteLine( tag );
+                    }
+
                     CreateAppraisal( image, @"images/image" + i + ".jpg", analysisResult );
                 }
                 
@@ -115,6 +120,8 @@ namespace AppraisalBot
                 "Ceramics",
                 "Wood",
                 "Paintings",
+                "Timepieces",
+                "Arms",
             };
 
             Random rnd = new Random();
@@ -122,7 +129,7 @@ namespace AppraisalBot
 
             Console.WriteLine("Material: " + material + " offset: " + offset + " numItems: " + numItems);
 
-            string url = "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc&material=" + material;
+            string url = "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc&material=" + material + "&showOnly=withImage";
 
             HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
 
