@@ -81,7 +81,7 @@ namespace AppraisalBot
                 Console.WriteLine("large url: " + responseObject.results[i].largeImage );
 
                 string smallImageUrl = responseObject.results[i].image;
-                int index = smallImageUrl.IndexOf( responseObject.results[i].largeImage.Substring(0,3) );
+                int index = smallImageUrl.LastIndexOf( responseObject.results[i].largeImage.Substring(0,3) );
                 string largeImageUrl = smallImageUrl.Substring(0,index) + responseObject.results[i].largeImage;
 
                 Bitmap image = DownloadImage( largeImageUrl );
@@ -188,6 +188,10 @@ namespace AppraisalBot
                     if (image.Width >= 250)
                     {
                         return image;
+                    }
+                    else
+                    {
+                        Console.WriteLine("throwing out image because it's too small. Width: " + image.Width);
                     }
                 }
             }
