@@ -254,8 +254,8 @@ namespace AppraisalBot
 
         static int GetYear( Bitmap image, bool isOld )
         {
-            int maxYear = 2017;
-            int minYear = 10;
+            int maxYear = 1917;
+            int minYear = 500;
 
             if ( isOld )
             {
