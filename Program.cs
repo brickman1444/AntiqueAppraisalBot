@@ -71,11 +71,7 @@ namespace AppraisalBot
 
             int numItems = 2;
 
-            Random rnd = new Random();
-            int collectionOffset = rnd.Next(0,1950);
-
-            string responseText = GetCollectionListing( numItems, collectionOffset );
-            MetResponse responseObject = JsonConvert.DeserializeObject<MetResponse>(responseText);
+            MetResponse responseObject = GetCollectionListing( numItems );
 
             Console.WriteLine( "Found " + responseObject.results.Count + " results" );
 
@@ -107,7 +103,12 @@ namespace AppraisalBot
             Console.WriteLine("Done");
         }
 
-        static string GetCollectionListing(int numItems, int offset)
+        static string GetMetAPIUrl( int offset, int numItems, string material)
+        {
+            return "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc&material=" + material + "&showOnly=withImage";
+        }
+
+        static MetResponse GetCollectionListing(int numItems)
         {
             string[] materials = {
                 "Bags",
@@ -127,28 +128,50 @@ namespace AppraisalBot
             Random rnd = new Random();
             string material = materials[ rnd.Next(0, materials.Length)];
 
+            Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
+
+            // First get the size of the results so we can randomly pick an offset within that.
+            int numItemsInCategory = 0;
+
+            string categorySizeUrl = GetMetAPIUrl( 0, 1, material );
+
+            HttpWebRequest categorySizeRequest = (HttpWebRequest)WebRequest.Create(categorySizeUrl);
+
+            using ( HttpWebResponse categorySizeResponse = (HttpWebResponse)categorySizeRequest.GetResponse() )
+            {
+                using ( StreamReader readStream = new StreamReader( categorySizeResponse.GetResponseStream(), encode) )
+                {
+                    string categoryResponseText = readStream.ReadToEnd();
+
+                    MetResponse categoryResponseObject = JsonConvert.DeserializeObject<MetResponse>(categoryResponseText);
+                    numItemsInCategory = categoryResponseObject.totalResults;
+                }
+            }
+
+            Console.WriteLine("Total items in category: " + numItemsInCategory);
+
+            int offset = rnd.Next(0, numItemsInCategory - numItems);
+
             Console.WriteLine("Material: " + material + " offset: " + offset + " numItems: " + numItems);
 
-            string url = "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc&material=" + material + "&showOnly=withImage";
+            string url = GetMetAPIUrl( offset, numItems, material);
 
             HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
 
-            HttpWebResponse response = (HttpWebResponse)myReq.GetResponse();
+            string responseText = "";
+            using ( HttpWebResponse response = (HttpWebResponse)myReq.GetResponse() )
+            {
+                using ( Stream receiveStream = response.GetResponseStream() )
+                {
+                    // Pipes the stream to a higher level stream reader with the required encoding format. 
+                    StreamReader readStream = new StreamReader(receiveStream, encode);
+                    responseText = readStream.ReadToEnd();;
+                }
 
-            Stream receiveStream = response.GetResponseStream();
-            Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
-            // Pipes the stream to a higher level stream reader with the required encoding format. 
-            StreamReader readStream = new StreamReader(receiveStream, encode);
-            Console.WriteLine("\r\nResponse stream received.");
+            }
 
-            string responseText = readStream.ReadToEnd();
-
-            // Releases the resources of the response.
-            response.Close();
-            // Releases the resources of the Stream.
-            readStream.Close();
-
-            return responseText;
+            MetResponse responseObject = JsonConvert.DeserializeObject<MetResponse>(responseText);
+            return responseObject;
         }
 
         static Bitmap DownloadImage(string url)
