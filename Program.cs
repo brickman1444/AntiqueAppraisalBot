@@ -316,7 +316,7 @@ namespace AppraisalBot
 
         static bool IsOld( AnalysisResult analysisResult )
         {
-            return Array.Exists( analysisResult.Description.Tags, x => x == "old" );
+            return analysisResult.Description.Tags.Contains( "old" );
         }
 
         static float GetPriceExpensiveMultiplier( AnalysisResult analysisResult )
@@ -328,6 +328,7 @@ namespace AppraisalBot
                 "display",
                 "large",
                 "colorful",
+                "old",
             };
 
             const float factor = 1.5f;
