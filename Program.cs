@@ -358,6 +358,24 @@ namespace AppraisalBot
             // Capitalize the first letter
             descriptionText = char.ToUpper(descriptionText[0]) + descriptionText.Substring(1);
 
+            string[] commonSimpleDescriptions = {
+                "A vase",
+                "A bowl",
+                "A plate",
+                "A knife",
+                "A clock",
+            };
+
+            bool isSimple = commonSimpleDescriptions.Contains( descriptionText );
+
+            string color = "puuurple";
+
+            if (isSimple)
+            {
+                descriptionText = descriptionText.Substring(0,2) + color + " " + descriptionText.Substring(2);
+                Console.WriteLine("Added color to simple description: " + color);
+            }
+
             return descriptionText;
         }
 
