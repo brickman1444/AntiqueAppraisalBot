@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 
 using Newtonsoft.Json;
 
@@ -229,7 +230,7 @@ namespace AppraisalBot
             }
         }
 
-        static PriceRange GetPriceRange(string caption, Bitmap image, double confidence)
+        static PriceRange GetPriceRange(string caption, Bitmap image, double confidence, float expensiveMultiplier)
         {
             PriceRange priceRange;
             priceRange.lowPrice = 0;
@@ -248,6 +249,8 @@ namespace AppraisalBot
             float green = (float)pixelSampleColor.G / 255.0f;
             float blue = (float)pixelSampleColor.B / 255.0f;
             priceRange.highPrice *= (int)( 1.0f + red + green + blue );
+
+            priceRange.highPrice = (int)(priceRange.highPrice * expensiveMultiplier);
 
             priceRange.lowPrice = (int)(priceRange.highPrice * confidence);
 
@@ -286,9 +289,10 @@ namespace AppraisalBot
             string descriptionText = GetDescription( caption );
             float confidence = (float)caption.Confidence;
             bool isOld = IsOld( analysisResult );
+            float expensiveMultiplier = GetPriceExpensiveMultiplier( analysisResult );
             Console.WriteLine( "Is Old: " + isOld );
 
-            Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld );
+            Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, expensiveMultiplier );
 
             composedImage.Save( destinationFilePath );
         }
@@ -315,6 +319,33 @@ namespace AppraisalBot
             return Array.Exists( analysisResult.Description.Tags, x => x == "old" );
         }
 
+        static float GetPriceExpensiveMultiplier( AnalysisResult analysisResult )
+        {
+            string[] expensiveTags = {
+                "gold",
+                "silver",
+                "decorated",
+                "display",
+                "large",
+                "colorful",
+            };
+
+            const float factor = 1.5f;
+            float outMultiplier = 1.0f;
+
+            foreach ( string tag in analysisResult.Description.Tags )
+            {
+                if ( expensiveTags.Contains( tag ) )
+                {
+                    outMultiplier *= factor;
+                }
+            }
+
+            Console.WriteLine( "Expensive multiplier: " + outMultiplier );
+
+            return outMultiplier;
+        }
+
         static string GetDescription( Caption caption )
         {
             // Filter and adjust the caption
@@ -329,7 +360,7 @@ namespace AppraisalBot
             return descriptionText;
         }
 
-        static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld)
+        static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, float expensiveMultiplier)
         {
             Bitmap loadedBitmap = sourceImage;
 
@@ -338,7 +369,7 @@ namespace AppraisalBot
             Bitmap drawnBitmap = new Bitmap( loadedBitmap );
             Graphics graphics = Graphics.FromImage(drawnBitmap);
 
-            PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, confidence );
+            PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, confidence, expensiveMultiplier );
             int year = GetYear( drawnBitmap, isOld );
 
             string fullCaption = descriptionText + " (ca. " + year + ")\n $" + priceRange.lowPrice + "-$" + priceRange.highPrice;
