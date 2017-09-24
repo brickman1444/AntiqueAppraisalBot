@@ -286,7 +286,7 @@ namespace AppraisalBot
             Caption caption = GetCaption( analysisResult );
             Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
 
-            string descriptionText = GetDescription( caption );
+            string descriptionText = GetDescription( caption, analysisResult.Color.DominantColorForeground );
             float confidence = (float)caption.Confidence;
             bool isOld = IsOld( analysisResult );
             float expensiveMultiplier = GetPriceExpensiveMultiplier( analysisResult );
@@ -347,13 +347,22 @@ namespace AppraisalBot
             return outMultiplier;
         }
 
-        static string GetDescription( Caption caption )
+        static string GetDescription( Caption caption, string foregroundColor )
         {
             // Filter and adjust the caption
             string descriptionText = caption.Text;
-            descriptionText = descriptionText.Replace("a close up of ", "");
-            descriptionText = descriptionText.Replace(" sitting on a table", "");
-            descriptionText = descriptionText.Replace(" on a table", "");
+
+            string[] stringsToRemove = {
+                "a close up of ",
+                " sitting on a table",
+                " sitting on a counter",
+                " on a table",
+            };
+
+            foreach (string text in stringsToRemove)
+            {
+                descriptionText = descriptionText.Replace(text, "");
+            }
 
             // Capitalize the first letter
             descriptionText = char.ToUpper(descriptionText[0]) + descriptionText.Substring(1);
@@ -368,7 +377,7 @@ namespace AppraisalBot
 
             bool isSimple = commonSimpleDescriptions.Contains( descriptionText );
 
-            string color = "puuurple";
+            string color = foregroundColor.ToLower();
 
             if (isSimple)
             {
