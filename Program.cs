@@ -105,7 +105,7 @@ namespace AppraisalBot
 
         static string GetMetAPIUrl( int offset, int numItems, string material)
         {
-            return "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc&material=" + material + "&showOnly=withImage";
+            return "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc&material=" + material + "&showOnly=openaccess";
         }
 
         static MetResponse GetCollectionListing(int numItems)
@@ -123,6 +123,8 @@ namespace AppraisalBot
                 "Paintings",
                 "Timepieces",
                 "Arms",
+                "Costume",
+                "Flatware",
             };
 
             Random rnd = new Random();
