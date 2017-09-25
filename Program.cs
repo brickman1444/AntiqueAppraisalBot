@@ -250,8 +250,6 @@ namespace AppraisalBot
                 priceRange.highPrice += c;
             }
 
-            priceRange.highPrice += image.Width + image.Height;
-
             System.Drawing.Color pixelSampleColor = image.GetPixel( image.Width / 2, image.Height / 2 );
 
             float red = (float)pixelSampleColor.R / 255.0f;
@@ -260,6 +258,8 @@ namespace AppraisalBot
             priceRange.highPrice *= (int)( 1.0f + red + green + blue );
 
             priceRange.highPrice = (int)(priceRange.highPrice * expensiveMultiplier);
+
+            priceRange.highPrice *= 20; // General multiplier to inflate prices
 
             priceRange.lowPrice = (int)(priceRange.highPrice * confidence);
 
