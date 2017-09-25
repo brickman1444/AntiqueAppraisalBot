@@ -291,7 +291,8 @@ namespace AppraisalBot
             Caption caption = GetCaption( analysisResult );
             Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
 
-            string descriptionText = GetDescription( caption, analysisResult.Color.DominantColorForeground );
+            string foregroundColor = GetForegroundColor( analysisResult );
+            string descriptionText = GetDescription( caption, foregroundColor );
             float confidence = (float)caption.Confidence;
             bool isOld = IsOld( analysisResult );
             float expensiveMultiplier = GetPriceExpensiveMultiplier( analysisResult );
@@ -378,6 +379,7 @@ namespace AppraisalBot
                 "A plate",
                 "A knife",
                 "A clock",
+                "A cup of coffee",
             };
 
             bool isSimple = commonSimpleDescriptions.Contains( descriptionText );
@@ -391,6 +393,24 @@ namespace AppraisalBot
             }
 
             return descriptionText;
+        }
+
+        static string GetForegroundColor( AnalysisResult analysisResult )
+        {
+            // If the foreground and background colors are the same, use the accent color.
+            // Unfortunately the accent color is a hex string so we have to find the nearest
+            // color that we know the name of.
+            string color = "";
+            if ( analysisResult.Color.DominantColorBackground == analysisResult.Color.DominantColorForeground )
+            {
+                color = ColorTable.GetClosestColorName( ColorTable.GetColorFromHexString( analysisResult.Color.AccentColor ) );
+            }
+            else
+            {
+                color = analysisResult.Color.DominantColorForeground;
+            }
+
+            return color;
         }
 
         static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, float expensiveMultiplier)
