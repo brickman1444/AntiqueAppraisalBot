@@ -78,8 +78,10 @@ namespace AppraisalBot
 
             for ( int i = 0; i < responseObject.results.Count; i++ )
             {
+                Console.WriteLine("-----------------------------------------------------------------------");
+
                 Console.WriteLine("small url: " + responseObject.results[i].image);
-                Console.WriteLine("large url: " + responseObject.results[i].largeImage );
+                //Console.WriteLine("large url: " + responseObject.results[i].largeImage );
 
                 string smallImageUrl = responseObject.results[i].image;
                 int index = smallImageUrl.LastIndexOf( responseObject.results[i].largeImage.Substring(0,3) );
@@ -91,10 +93,12 @@ namespace AppraisalBot
                 {
                     AnalysisResult analysisResult = AnalyzeImage( image ).GetAwaiter().GetResult();
 
+                    string tagString = "";
                     foreach ( string tag in analysisResult.Description.Tags )
                     {
-                        Console.WriteLine( tag );
+                        tagString += tag + ", ";
                     }
+                    Console.WriteLine( tagString );
 
                     string accentColor = ColorTable.GetClosestColorName( ColorTable.GetColorFromHexString( analysisResult.Color.AccentColor ) );
 
@@ -213,7 +217,7 @@ namespace AppraisalBot
         static async Task<AnalysisResult> AnalyzeImage(Bitmap sourceImage)
         {
                 VisionServiceClient VisionServiceClient = new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
-            Console.WriteLine("VisionServiceClient is created");
+            //Console.WriteLine("VisionServiceClient is created");
 
             using (MemoryStream memoryStream = new MemoryStream())
             {
