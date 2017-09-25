@@ -96,6 +96,11 @@ namespace AppraisalBot
                         Console.WriteLine( tag );
                     }
 
+                    string accentColor = ColorTable.GetClosestColorName( ColorTable.GetColorFromHexString( analysisResult.Color.AccentColor ) );
+
+                    //Color categorizedAccentColor = Color.FromKnownColor( )
+                    Console.WriteLine("Foreground: " + analysisResult.Color.DominantColorForeground + " Background: " + analysisResult.Color.DominantColorBackground + " Accent: " + accentColor );
+
                     CreateAppraisal( image, @"images/image" + i + ".jpg", analysisResult );
                 }
                 
