@@ -50,6 +50,18 @@ namespace AppraisalBot
         public int highPrice;
     }
 
+    class Appraisal
+    {
+        public Bitmap image;
+        public string comment;
+
+        public Appraisal( Bitmap inImage, string inComment)
+        {
+            image = inImage;
+            comment = inComment;
+        }
+    }
+
     class Program
     {
         static string computerVisionKey = "";
@@ -102,12 +114,13 @@ namespace AppraisalBot
 
                     string accentColor = ColorTable.GetClosestColorName( ColorTable.GetColorFromHexString( analysisResult.Color.AccentColor ) );
 
-                    //Color categorizedAccentColor = Color.FromKnownColor( )
                     Console.WriteLine("Foreground: " + analysisResult.Color.DominantColorForeground + " Background: " + analysisResult.Color.DominantColorBackground + " Accent: " + accentColor );
 
-                    CreateAppraisal( image, @"images/image" + i + ".jpg", analysisResult );
+                    Appraisal appraisal = CreateAppraisal( image, analysisResult );
+
+                    string destinationFilePath = @"images/image" + i + ".jpg";
+                    appraisal.image.Save( destinationFilePath );
                 }
-                
             }
 
             Console.WriteLine("Done");
@@ -290,7 +303,7 @@ namespace AppraisalBot
             return year;
         }
 
-        static void CreateAppraisal( Bitmap sourceImage, string destinationFilePath, AnalysisResult analysisResult )
+        static Appraisal CreateAppraisal( Bitmap sourceImage, AnalysisResult analysisResult )
         {
             Caption caption = GetCaption( analysisResult );
             Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
@@ -304,7 +317,9 @@ namespace AppraisalBot
 
             Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, expensiveMultiplier );
 
-            composedImage.Save( destinationFilePath );
+            string comment = "";
+
+            return new Appraisal( composedImage, comment );
         }
 
         static Caption GetCaption( AnalysisResult analysisResult )
