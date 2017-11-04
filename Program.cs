@@ -131,6 +131,11 @@ namespace AppraisalBot
                     string destinationFilePath = @"images/image" + i + ".jpg";
                     appraisal.image.Save( destinationFilePath );
 
+                    using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"images/comment" + i + ".txt") )
+                    {
+                        file.WriteLine(appraisal.comment);
+                    }
+
                     TweetAppraisal( appraisal );
                 }
             }
@@ -329,7 +334,7 @@ namespace AppraisalBot
 
             Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, expensiveMultiplier );
 
-            string comment = "";
+            string comment = Comment.Get();
 
             return new Appraisal( composedImage, comment );
         }
