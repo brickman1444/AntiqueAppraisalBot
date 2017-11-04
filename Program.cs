@@ -82,6 +82,16 @@ namespace AppraisalBot
                 computerVisionKey = fs.ReadToEnd();
             }
 
+            using ( StreamReader fs = new StreamReader( "localconfig/twitterKeys.txt" ) )
+            {
+                string consumerKey = fs.ReadLine();
+                string consumerSecret = fs.ReadLine();
+                string accessToken = fs.ReadLine();
+                string accessTokenSecret = fs.ReadLine();
+
+                Tweetinvi.Auth.SetUserCredentials(consumerKey, consumerSecret, accessToken, accessTokenSecret);
+            }
+
             int numItems = 2;
 
             MetResponse responseObject = GetCollectionListing( numItems );
