@@ -92,7 +92,7 @@ namespace AppraisalBot
                 Tweetinvi.Auth.SetUserCredentials(consumerKey, consumerSecret, accessToken, accessTokenSecret);
             }
 
-            int numItems = 2;
+            int numItems = 1;
 
             MetResponse responseObject = GetCollectionListing( numItems );
 
@@ -130,6 +130,8 @@ namespace AppraisalBot
 
                     string destinationFilePath = @"images/image" + i + ".jpg";
                     appraisal.image.Save( destinationFilePath );
+
+                    TweetAppraisal( appraisal );
                 }
             }
 
@@ -476,6 +478,21 @@ namespace AppraisalBot
             graphics.DrawString(fullCaption, drawFont, whiteBrush, textOriginX, textOriginY);
 
             return drawnBitmap;
+        }
+        static void TweetAppraisal( Appraisal appraisal )
+        {
+            using ( MemoryStream memoryStream = new MemoryStream() )
+            {
+                appraisal.image.Save(memoryStream, ImageFormat.Png);
+                byte[] bytes = memoryStream.ToArray();
+
+                var media = Tweetinvi.Upload.UploadImage(bytes);
+
+                var tweet = Tweetinvi.Tweet.PublishTweet("image", new Tweetinvi.Parameters.PublishTweetOptionalParameters
+                {
+                    Medias = new List<Tweetinvi.Models.IMedia> { media }
+                });
+            }
         }
     }
 }
