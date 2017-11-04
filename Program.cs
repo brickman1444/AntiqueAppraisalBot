@@ -493,7 +493,7 @@ namespace AppraisalBot
 
                 var media = Tweetinvi.Upload.UploadImage(bytes);
 
-                var tweet = Tweetinvi.Tweet.PublishTweet("image", new Tweetinvi.Parameters.PublishTweetOptionalParameters
+                var tweet = Tweetinvi.Tweet.PublishTweet(appraisal.comment, new Tweetinvi.Parameters.PublishTweetOptionalParameters
                 {
                     Medias = new List<Tweetinvi.Models.IMedia> { media }
                 });
