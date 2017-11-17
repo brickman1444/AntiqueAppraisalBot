@@ -11,8 +11,9 @@ using Newtonsoft.Json;
 using Microsoft.ProjectOxford.Vision;
 using Microsoft.ProjectOxford.Vision.Contract;
 
-using System.Drawing;
-using System.Drawing.Imaging;
+using SixLabors.ImageSharp;
+
+using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.Rgba32>;
 
 namespace AppraisalBot
 {
@@ -252,7 +253,7 @@ namespace AppraisalBot
                 // returned values are returned as a stream, then read into a string
                 using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponseAsync().GetAwaiter().GetResult()){
                     
-                    Bitmap image = new Bitmap( lxResponse.GetResponseStream() );
+                    Bitmap image = Image.Load( lxResponse.GetResponseStream() );
 
                     if (image.Width >= 250)
                     {
@@ -278,7 +279,7 @@ namespace AppraisalBot
 
             using (MemoryStream memoryStream = new MemoryStream())
             {
-                sourceImage.Save( memoryStream, sourceImage.RawFormat );
+                sourceImage.SaveAsPng(memoryStream);
                 memoryStream.Position = 0;
 
                 //
@@ -307,7 +308,7 @@ namespace AppraisalBot
                 priceRange.highPrice += c;
             }
 
-            System.Drawing.Color pixelSampleColor = image.GetPixel( image.Width / 2, image.Height / 2 );
+            Rgba32 pixelSampleColor = image[ image.Width / 2, image.Height / 2 ];
 
             float red = (float)pixelSampleColor.R / 255.0f;
             float green = (float)pixelSampleColor.G / 255.0f;
@@ -335,7 +336,7 @@ namespace AppraisalBot
                 minYear = 1000;
             }
 
-            System.Drawing.Color pixelSampleColor = image.GetPixel( image.Width / 3, image.Height / 3 );
+            Rgba32 pixelSampleColor = image[ image.Width / 3, image.Height / 3 ];
 
             float red = (float)pixelSampleColor.R / 255.0f;
             float green = (float)pixelSampleColor.G / 255.0f;
@@ -515,7 +516,7 @@ namespace AppraisalBot
         {
             using ( MemoryStream memoryStream = new MemoryStream() )
             {
-                appraisal.image.Save(memoryStream, ImageFormat.Png);
+                appraisal.image.SaveAsPng(memoryStream);
                 byte[] bytes = memoryStream.ToArray();
 
                 var media = Tweetinvi.Upload.UploadImage(bytes);
