@@ -1,13 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-     <PackageReference Include="Microsoft.ProjectOxford.Vision" Version="1.0.393" />
-     <PackageReference Include="CoreCompat.System.Drawing.v2" Version="5.2.0-preview1-r131" />
-     <PackageReference Include="TweetinviAPI" Version="2.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Microsoft.ProjectOxford.Vision.DotNetCore" Version="1.1.0" />
+    <PackageReference Include="CoreCompat.System.Drawing" Version="1.0.0-beta006" />
+    <PackageReference Include="TweetinviAPI" Version="2.1.0" />
+    <PackageReference Include="AWSSDK.Lambda" Version="3.3.8.2" />
+    <PackageReference Include="Amazon.Lambda.Tools" Version="1.8.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <DotNetCliToolReference Include="Amazon.Lambda.Tools" Version="1.8.1" />
   </ItemGroup>
 </Project>

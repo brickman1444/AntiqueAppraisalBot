@@ -62,13 +62,21 @@ namespace AppraisalBot
         }
     }
 
-    class Program
+    public class Program
     {
         static string computerVisionKey = "";
-
-        static void Main(string[] args)
+        public Stream awsLambdaHandler(Stream inputStream)
+       {
+           //Main(new string[0]);
+           Console.WriteLine("starting via lambda");
+           Main( new string[0]);
+           return inputStream;
+       }
+        public static void Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+            Console.WriteLine("Beginning program");
 
             // Delete the previous output
             string[] filePaths = Directory.GetFiles(@"images\");
@@ -77,19 +85,32 @@ namespace AppraisalBot
                 File.Delete(filePath);
             }
 
-            using ( StreamReader fs = new StreamReader( "localconfig/computervisionkey.txt" ) )
+            computerVisionKey = System.Environment.GetEnvironmentVariable ("computerVisionKey");
+
+            if (computerVisionKey == null)
             {
-                computerVisionKey = fs.ReadToEnd();
+                using ( StreamReader fs = File.OpenText( "localconfig/computervisionkey.txt" ) )
+                {
+                    computerVisionKey = fs.ReadToEnd();
+                }
             }
 
-            using ( StreamReader fs = new StreamReader( "localconfig/twitterKeys.txt" ) )
-            {
-                string consumerKey = fs.ReadLine();
-                string consumerSecret = fs.ReadLine();
-                string accessToken = fs.ReadLine();
-                string accessTokenSecret = fs.ReadLine();
+            string consumerKey = System.Environment.GetEnvironmentVariable ("twitterConsumerKey");
+            string consumerSecret = System.Environment.GetEnvironmentVariable ("twitterConsumerSecret");
+            string accessToken = System.Environment.GetEnvironmentVariable ("twitterAccessToken");
+            string accessTokenSecret = System.Environment.GetEnvironmentVariable ("twitterAccessTokenSecret");
 
-                Tweetinvi.Auth.SetUserCredentials(consumerKey, consumerSecret, accessToken, accessTokenSecret);
+            if (consumerKey == null)
+            {
+                using ( StreamReader fs = File.OpenText( "localconfig/twitterKeys.txt" ) )
+                {
+                    consumerKey = fs.ReadLine();
+                    consumerSecret = fs.ReadLine();
+                    accessToken = fs.ReadLine();
+                    accessTokenSecret = fs.ReadLine();
+
+                    Tweetinvi.Auth.SetUserCredentials(consumerKey, consumerSecret, accessToken, accessTokenSecret);
+                }
             }
 
             int numItems = 1;
@@ -113,7 +134,7 @@ namespace AppraisalBot
                 bool doAnalysis = true;
                 if (image != null && doAnalysis)
                 {
-                    AnalysisResult analysisResult = AnalyzeImage( image ).GetAwaiter().GetResult();
+                    AnalysisResult analysisResult = AnalyzeImage( image );
 
                     string tagString = "";
                     foreach ( string tag in analysisResult.Description.Tags )
@@ -131,7 +152,7 @@ namespace AppraisalBot
                     string destinationFilePath = @"images/image" + i + ".jpg";
                     appraisal.image.Save( destinationFilePath );
 
-                    using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"images/comment" + i + ".txt") )
+                    using (StreamWriter file = File.CreateText(@"images/comment" + i + ".txt") )
                     {
                         file.WriteLine(appraisal.comment);
                     }
@@ -179,7 +200,7 @@ namespace AppraisalBot
 
             HttpWebRequest categorySizeRequest = (HttpWebRequest)WebRequest.Create(categorySizeUrl);
 
-            using ( HttpWebResponse categorySizeResponse = (HttpWebResponse)categorySizeRequest.GetResponse() )
+            using ( HttpWebResponse categorySizeResponse = (HttpWebResponse)categorySizeRequest.GetResponseAsync().GetAwaiter().GetResult() )
             {
                 using ( StreamReader readStream = new StreamReader( categorySizeResponse.GetResponseStream(), encode) )
                 {
@@ -201,7 +222,7 @@ namespace AppraisalBot
             HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
 
             string responseText = "";
-            using ( HttpWebResponse response = (HttpWebResponse)myReq.GetResponse() )
+            using ( HttpWebResponse response = (HttpWebResponse)myReq.GetResponseAsync().GetAwaiter().GetResult() )
             {
                 using ( Stream receiveStream = response.GetResponseStream() )
                 {
@@ -223,7 +244,7 @@ namespace AppraisalBot
                 HttpWebRequest lxRequest = (HttpWebRequest)WebRequest.Create(url);
 
                 // returned values are returned as a stream, then read into a string
-                using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponse()){
+                using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponseAsync().GetAwaiter().GetResult()){
                     
                     Bitmap image = new Bitmap( lxResponse.GetResponseStream() );
 
@@ -244,7 +265,7 @@ namespace AppraisalBot
             return null;
         }
 
-        static async Task<AnalysisResult> AnalyzeImage(Bitmap sourceImage)
+        static AnalysisResult AnalyzeImage(Bitmap sourceImage)
         {
                 VisionServiceClient VisionServiceClient = new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
             //Console.WriteLine("VisionServiceClient is created");
@@ -264,7 +285,7 @@ namespace AppraisalBot
                 VisualFeature.Color,
                 VisualFeature.Description
                 };
-                AnalysisResult analysisResult = await VisionServiceClient.AnalyzeImageAsync( memoryStream, visualFeatures);
+                AnalysisResult analysisResult = VisionServiceClient.AnalyzeImageAsync( memoryStream, visualFeatures).GetAwaiter().GetResult();
                 return analysisResult;
             }
         }

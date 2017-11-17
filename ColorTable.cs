@@ -39,12 +39,12 @@ namespace AppraisalBot
 
         public static string GetClosestColorName( Color color )
         {
-            float closestSquaredDistance = SquaredColorDistance( color, table[0] );
+            double closestSquaredDistance = SquaredColorDistance( color, table[0] );
             Color closestColor = table[0];
 
             foreach ( Color c in table )
             {
-                float squaredDistance = SquaredColorDistance( color, c );
+                double squaredDistance = SquaredColorDistance( color, c );
                 
                 if ( squaredDistance < closestSquaredDistance )
                 {
@@ -58,12 +58,12 @@ namespace AppraisalBot
             return name;
         }
 
-        static float SquaredColorDistance( Color color1, Color color2 )
+        static double SquaredColorDistance( Color color1, Color color2 )
         {
-            return MathF.Pow( color1.R - color2.R, 2 )
-                    + MathF.Pow( color1.G - color2.G, 2 )
-                    + MathF.Pow( color1.B - color2.B, 2 )
-                    + MathF.Pow( color1.A - color2.A, 2 );
+            return Math.Pow( color1.R - color2.R, 2 )
+                    + Math.Pow( color1.G - color2.G, 2 )
+                    + Math.Pow( color1.B - color2.B, 2 )
+                    + Math.Pow( color1.A - color2.A, 2 );
         }
 
         static string GetColorName( Color color )
