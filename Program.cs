@@ -79,10 +79,13 @@ namespace AppraisalBot
             Console.WriteLine("Beginning program");
 
             // Delete the previous output
-            string[] filePaths = Directory.GetFiles(@"images\");
-            foreach (string filePath in filePaths)
+            if ( Directory.Exists("images") )
             {
-                File.Delete(filePath);
+                string[] filePaths = Directory.GetFiles(@"images\");
+                foreach (string filePath in filePaths)
+                {
+                    File.Delete(filePath);
+                }
             }
 
             computerVisionKey = System.Environment.GetEnvironmentVariable ("computerVisionKey");
@@ -149,12 +152,15 @@ namespace AppraisalBot
 
                     Appraisal appraisal = CreateAppraisal( image, analysisResult );
 
-                    string destinationFilePath = @"images/image" + i + ".jpg";
-                    appraisal.image.Save( destinationFilePath );
-
-                    using (StreamWriter file = File.CreateText(@"images/comment" + i + ".txt") )
+                    if ( Directory.Exists("images"))
                     {
-                        file.WriteLine(appraisal.comment);
+                        string destinationFilePath = @"images/image" + i + ".jpg";
+                        appraisal.image.Save( destinationFilePath );
+
+                        using (StreamWriter file = File.CreateText(@"images/comment" + i + ".txt") )
+                        {
+                            file.WriteLine(appraisal.comment);
+                        }
                     }
 
                     TweetAppraisal( appraisal );
@@ -260,7 +266,7 @@ namespace AppraisalBot
             }
             catch (Exception e)
             {
-                Console.WriteLine("exception thrown during get for " + url);
+                Console.WriteLine("exception thrown during get for " + url + " " + e);
             }
             return null;
         }
