@@ -506,7 +506,7 @@ namespace AppraisalBot
             float footerHeight = scale * footerImage.Height;
             float footerOriginY = drawnBitmap.Height - footerHeight;
 
-            float textOriginY = footerOriginY + 15.0f * scale;
+            float textOriginY = footerOriginY + 10.0f * scale;
             float textOriginX = 200.0f * scale;
 
             int fontSize = (int)(45 * scale);
@@ -522,7 +522,7 @@ namespace AppraisalBot
             //     Console.WriteLine();
             // }
 
-            FontFamily family = SystemFonts.Find("Arial"); //assumes arial has been installed
+            FontFamily family = SystemFonts.Find("DejaVu Sans"); //assumes arial has been installed
             Font font = new Font(family, fontSize, FontStyle.Bold);
 
             drawnBitmap.Mutate( x => x.DrawImage( footerImage, new Size(drawnBitmap.Width, (int)footerHeight), new SixLabors.Primitives.Point( 0, (int)footerOriginY), new GraphicsOptions() )
