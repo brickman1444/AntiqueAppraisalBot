@@ -509,7 +509,7 @@ namespace AppraisalBot
             float textOriginY = footerOriginY + 10.0f * scale;
             float textOriginX = 200.0f * scale;
 
-            int fontSize = (int)(45 * scale);
+            int fontSize = (int)(33 * scale);
 
             // System.Collections.Generic.IEnumerable<FontFamily> families = SystemFonts.Families;
             // IOrderedEnumerable<FontFamily> orderd = families.OrderBy(x => x.Name);
