@@ -489,7 +489,18 @@ namespace AppraisalBot
 
             string fullCaption = descriptionText + String.Format( " (ca. {0})\n ${1:0,0}-${2:0,0}", year, priceRange.lowPrice, priceRange.highPrice);
 
-            Bitmap footerImage = Image.Load(@"sourceArt/footer.png");
+            Bitmap footerImage = null;
+            
+            if ( Directory.Exists("sourceArt" ) )
+            {
+                footerImage = Image.Load(@"sourceArt/footer.png");
+            } 
+            else
+            {
+                Amazon.S3.AmazonS3Client client = new Amazon.S3.AmazonS3Client( Amazon.RegionEndpoint.USEast2 );
+                Amazon.S3.Model.GetObjectResponse response = client.GetObjectAsync( "appraisal-bot", "footer.png" ).GetAwaiter().GetResult();
+                footerImage = Image.Load( response.ResponseStream );
+            }
 
             float scale = (float)drawnBitmap.Width / (float)footerImage.Width;
             float footerHeight = scale * footerImage.Height;
