@@ -390,9 +390,9 @@ namespace AppraisalBot
 
             Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, expensiveMultiplier );
 
-            string comment = Comment.Get();
+            //string comment = Comment.Get();
 
-            return new Appraisal( composedImage, comment );
+            return new Appraisal( composedImage, descriptionText );
         }
 
         static Caption GetCaption( AnalysisResult analysisResult )
