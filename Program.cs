@@ -279,29 +279,54 @@ namespace AppraisalBot
 
         static AnalysisResult AnalyzeImage(Bitmap sourceImage)
         {
-                VisionServiceClient VisionServiceClient = new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
-            //Console.WriteLine("VisionServiceClient is created");
+            VisionServiceClient VisionServiceClient = new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
 
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 sourceImage.SaveAsPng(memoryStream);
                 memoryStream.Position = 0;
 
-                //
-                // Analyze the image for all visual features
-                //
                 Console.WriteLine("Calling VisionServiceClient.AnalyzeImageAsync()...");
-            VisualFeature[] visualFeatures = new VisualFeature[] { 
-                VisualFeature.Adult,
-                VisualFeature.Categories,
-                VisualFeature.Color,
-                VisualFeature.Description
+                VisualFeature[] visualFeatures = new VisualFeature[] { 
+                    VisualFeature.Adult,
+                    VisualFeature.Categories,
+                    VisualFeature.Color,
+                    VisualFeature.Description
                 };
                 AnalysisResult analysisResult = VisionServiceClient.AnalyzeImageAsync( memoryStream, visualFeatures).GetAwaiter().GetResult();
                 return analysisResult;
             }
         }
 
+        static Bitmap SmartCropImage(Bitmap sourceImage)
+        {
+            VisionServiceClient VisionServiceClient = new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
+
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                sourceImage.SaveAsPng(memoryStream);
+                memoryStream.Position = 0;
+
+                int width = sourceImage.Width;
+                int height = (int)(sourceImage.Width / 16.0f * 9.0f * 1.2f); // Set it to a 16:9 with an extra 20% to increase the overall size
+                Console.WriteLine("Original Width: " + sourceImage.Width + " Original Height: " + sourceImage.Height + " Cropped Height: " + height);
+
+                if ( sourceImage.Height > height )
+                {
+                    Console.WriteLine("Calling VisionServiceClient.GetThumbnailAsync()...");
+                    byte[] bytes = VisionServiceClient.GetThumbnailAsync( memoryStream, width, height ).GetAwaiter().GetResult();
+
+                    Bitmap croppedImage = Image.Load( bytes );
+
+                    return croppedImage;
+                }
+                else
+                {
+                    Console.WriteLine("Image was already small. No reason to crop");
+                    return sourceImage;
+                }
+            }
+        }
         static PriceRange GetPriceRange(string caption, double confidence, float expensiveMultiplier)
         {
             PriceRange priceRange;
