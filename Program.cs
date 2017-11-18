@@ -112,12 +112,14 @@ namespace AppraisalBot
                     consumerSecret = fs.ReadLine();
                     accessToken = fs.ReadLine();
                     accessTokenSecret = fs.ReadLine();
-
-                    Tweetinvi.Auth.SetUserCredentials(consumerKey, consumerSecret, accessToken, accessTokenSecret);
                 }
             }
 
+            Tweetinvi.Auth.SetUserCredentials(consumerKey, consumerSecret, accessToken, accessTokenSecret);
+
             int numItems = 1;
+
+            Console.WriteLine("Getting collection listing");
 
             MetResponse responseObject = GetCollectionListing( numItems );
 
@@ -479,38 +481,43 @@ namespace AppraisalBot
 
         static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, float expensiveMultiplier)
         {
-            Bitmap loadedBitmap = sourceImage;
+            // TODO: reimplement drawing.
+            return sourceImage;
 
-            // There's some exception that's thrown when creating a Graphics from an "indexed bitmap"
-            // which some of the images are. You have to create a new bitmap and that works.
-            Bitmap drawnBitmap = new Bitmap( loadedBitmap );
-            Graphics graphics = Graphics.FromImage(drawnBitmap);
+            // Bitmap loadedBitmap = sourceImage;
 
-            PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, confidence, expensiveMultiplier );
-            int year = GetYear( drawnBitmap, isOld );
+            // // There's some exception that's thrown when creating a Graphics from an "indexed bitmap"
+            // // which some of the images are. You have to create a new bitmap and that works.
+            // Bitmap drawnBitmap = new Bitmap( loadedBitmap );
+            // Graphics graphics = Graphics.FromImage(drawnBitmap);
 
-            string fullCaption = descriptionText + String.Format( " (ca. {0})\n ${1:0,0}-${2:0,0}", year, priceRange.lowPrice, priceRange.highPrice);
+            // sourceImage.Mutate
 
-            Bitmap footerImage = (Bitmap)Image.FromFile(@"sourceArt/footer.png");
+            // PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, confidence, expensiveMultiplier );
+            // int year = GetYear( drawnBitmap, isOld );
 
-            float scale = (float)drawnBitmap.Width / (float)footerImage.Width;
-            float footerHeight = scale * footerImage.Height;
-            float footerOriginY = drawnBitmap.Height - footerHeight;
+            // string fullCaption = descriptionText + String.Format( " (ca. {0})\n ${1:0,0}-${2:0,0}", year, priceRange.lowPrice, priceRange.highPrice);
 
-            graphics.DrawImage( footerImage, 0, footerOriginY, drawnBitmap.Width, footerHeight );
+            // Bitmap footerImage = (Bitmap)Image.FromFile(@"sourceArt/footer.png");
 
-            float textOriginY = footerOriginY + 25.0f * scale;
-            float textOriginX = 200.0f * scale;
+            // float scale = (float)drawnBitmap.Width / (float)footerImage.Width;
+            // float footerHeight = scale * footerImage.Height;
+            // float footerOriginY = drawnBitmap.Height - footerHeight;
 
-            int fontSize = (int)(25 * scale);
+            // graphics.DrawImage( footerImage, 0, footerOriginY, drawnBitmap.Width, footerHeight );
 
-            Font drawFont = new Font("Arial", fontSize, FontStyle.Bold);
-            SolidBrush grayBrush = new SolidBrush(System.Drawing.Color.MidnightBlue);
-            graphics.DrawString(fullCaption, drawFont, grayBrush, textOriginX + 1, textOriginY + 1);
-            SolidBrush whiteBrush = new SolidBrush(System.Drawing.Color.White);
-            graphics.DrawString(fullCaption, drawFont, whiteBrush, textOriginX, textOriginY);
+            // float textOriginY = footerOriginY + 25.0f * scale;
+            // float textOriginX = 200.0f * scale;
 
-            return drawnBitmap;
+            // int fontSize = (int)(25 * scale);
+
+            // Font drawFont = new Font("Arial", fontSize, FontStyle.Bold);
+            // SolidBrush grayBrush = new SolidBrush(System.Drawing.Color.MidnightBlue);
+            // graphics.DrawString(fullCaption, drawFont, grayBrush, textOriginX + 1, textOriginY + 1);
+            // SolidBrush whiteBrush = new SolidBrush(System.Drawing.Color.White);
+            // graphics.DrawString(fullCaption, drawFont, whiteBrush, textOriginX, textOriginY);
+
+            // return drawnBitmap;
         }
         static void TweetAppraisal( Appraisal appraisal )
         {
@@ -519,8 +526,10 @@ namespace AppraisalBot
                 appraisal.image.SaveAsPng(memoryStream);
                 byte[] bytes = memoryStream.ToArray();
 
+                Console.WriteLine("Uploading image to twitter");
                 var media = Tweetinvi.Upload.UploadImage(bytes);
 
+                Console.WriteLine("Publishing tweet");
                 var tweet = Tweetinvi.Tweet.PublishTweet(appraisal.comment, new Tweetinvi.Parameters.PublishTweetOptionalParameters
                 {
                     Medias = new List<Tweetinvi.Models.IMedia> { media }
