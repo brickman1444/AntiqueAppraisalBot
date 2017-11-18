@@ -12,12 +12,15 @@ using Microsoft.ProjectOxford.Vision;
 using Microsoft.ProjectOxford.Vision.Contract;
 
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing;
+using SixLabors.Fonts;
+using SixLabors.Primitives;
 
 using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.Rgba32>;
 
 namespace AppraisalBot
 {
-    class MetResponse
+    public class MetResponse
     {
         public Object request;
         public List<MetResult> results;
@@ -30,7 +33,7 @@ namespace AppraisalBot
         public string correctedQuery;
     }
 
-    class MetResult
+    public class MetResult
     {
         public string title;
         public string description;
@@ -299,23 +302,21 @@ namespace AppraisalBot
             }
         }
 
-        static PriceRange GetPriceRange(string caption, Bitmap image, double confidence, float expensiveMultiplier)
+        static PriceRange GetPriceRange(string caption, double confidence, float expensiveMultiplier)
         {
             PriceRange priceRange;
             priceRange.lowPrice = 0;
             priceRange.highPrice = 0;
 
+            // Longer captions means higher prices
             foreach ( char c in caption )
             {
                 priceRange.highPrice += c;
             }
 
-            Rgba32 pixelSampleColor = image[ image.Width / 2, image.Height / 2 ];
-
-            float red = (float)pixelSampleColor.R / 255.0f;
-            float green = (float)pixelSampleColor.G / 255.0f;
-            float blue = (float)pixelSampleColor.B / 255.0f;
-            priceRange.highPrice *= (int)( 1.0f + red + green + blue );
+            // Randomly increase price
+            Random rnd = new Random();
+            priceRange.highPrice *= (int)( 1.0f + rnd.NextDouble() * 3.0 );
 
             priceRange.highPrice = (int)(priceRange.highPrice * expensiveMultiplier);
 
@@ -481,43 +482,42 @@ namespace AppraisalBot
 
         static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, float expensiveMultiplier)
         {
-            // TODO: reimplement drawing.
-            return sourceImage;
+            Bitmap drawnBitmap = sourceImage.Clone();
 
-            // Bitmap loadedBitmap = sourceImage;
+            PriceRange priceRange = GetPriceRange( descriptionText, confidence, expensiveMultiplier );
+            int year = GetYear( drawnBitmap, isOld );
 
-            // // There's some exception that's thrown when creating a Graphics from an "indexed bitmap"
-            // // which some of the images are. You have to create a new bitmap and that works.
-            // Bitmap drawnBitmap = new Bitmap( loadedBitmap );
-            // Graphics graphics = Graphics.FromImage(drawnBitmap);
+            string fullCaption = descriptionText + String.Format( " (ca. {0})\n ${1:0,0}-${2:0,0}", year, priceRange.lowPrice, priceRange.highPrice);
 
-            // sourceImage.Mutate
+            Bitmap footerImage = Image.Load(@"sourceArt/footer.png");
 
-            // PriceRange priceRange = GetPriceRange( descriptionText, drawnBitmap, confidence, expensiveMultiplier );
-            // int year = GetYear( drawnBitmap, isOld );
+            float scale = (float)drawnBitmap.Width / (float)footerImage.Width;
+            float footerHeight = scale * footerImage.Height;
+            float footerOriginY = drawnBitmap.Height - footerHeight;
 
-            // string fullCaption = descriptionText + String.Format( " (ca. {0})\n ${1:0,0}-${2:0,0}", year, priceRange.lowPrice, priceRange.highPrice);
+            float textOriginY = footerOriginY + 15.0f * scale;
+            float textOriginX = 200.0f * scale;
 
-            // Bitmap footerImage = (Bitmap)Image.FromFile(@"sourceArt/footer.png");
+            int fontSize = (int)(45 * scale);
 
-            // float scale = (float)drawnBitmap.Width / (float)footerImage.Width;
-            // float footerHeight = scale * footerImage.Height;
-            // float footerOriginY = drawnBitmap.Height - footerHeight;
+            // System.Collections.Generic.IEnumerable<FontFamily> families = SystemFonts.Families;
+            // IOrderedEnumerable<FontFamily> orderd = families.OrderBy(x => x.Name);
+            // int len = families.Max(x => x.Name.Length);
+            // foreach (FontFamily f in orderd)
+            // {
+            //     Console.Write(f.Name.PadRight(len));
+            //     Console.Write('\t');
+            //     Console.Write(string.Join(",", f.AvailibleStyles.OrderBy(x=>x).Select(x => x.ToString())));
+            //     Console.WriteLine();
+            // }
 
-            // graphics.DrawImage( footerImage, 0, footerOriginY, drawnBitmap.Width, footerHeight );
+            FontFamily family = SystemFonts.Find("Arial"); //assumes arial has been installed
+            Font font = new Font(family, fontSize, FontStyle.Bold);
 
-            // float textOriginY = footerOriginY + 25.0f * scale;
-            // float textOriginX = 200.0f * scale;
+            drawnBitmap.Mutate( x => x.DrawImage( footerImage, new Size(drawnBitmap.Width, (int)footerHeight), new SixLabors.Primitives.Point( 0, (int)footerOriginY), new GraphicsOptions() )
+            .DrawText( fullCaption, font, Rgba32.White, new PointF( textOriginX + 1, textOriginY + 1 ) ) );
 
-            // int fontSize = (int)(25 * scale);
-
-            // Font drawFont = new Font("Arial", fontSize, FontStyle.Bold);
-            // SolidBrush grayBrush = new SolidBrush(System.Drawing.Color.MidnightBlue);
-            // graphics.DrawString(fullCaption, drawFont, grayBrush, textOriginX + 1, textOriginY + 1);
-            // SolidBrush whiteBrush = new SolidBrush(System.Drawing.Color.White);
-            // graphics.DrawString(fullCaption, drawFont, whiteBrush, textOriginX, textOriginY);
-
-            // return drawnBitmap;
+            return drawnBitmap;
         }
         static void TweetAppraisal( Appraisal appraisal )
         {
