@@ -472,6 +472,8 @@ namespace AppraisalBot
                 "A knife",
                 "A clock",
                 "A cup of coffee",
+                "A bird",
+                "A tool",
             };
 
             bool isSimple = commonSimpleDescriptions.Contains( descriptionText );
