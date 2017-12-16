@@ -291,7 +291,8 @@ namespace AppraisalBot
                     VisualFeature.Adult,
                     VisualFeature.Categories,
                     VisualFeature.Color,
-                    VisualFeature.Description
+                    VisualFeature.Description,
+                    VisualFeature.ImageType
                 };
                 AnalysisResult analysisResult = VisionServiceClient.AnalyzeImageAsync( memoryStream, visualFeatures).GetAwaiter().GetResult();
                 return analysisResult;
@@ -352,14 +353,25 @@ namespace AppraisalBot
             return priceRange;
         }
 
-        static int GetYear( Bitmap image, bool isOld )
+        static int GetYear( Bitmap image, bool isOld, bool isBlackAndWhitePhoto )
         {
             int maxYear = 1917;
             int minYear = 500;
 
-            if ( isOld )
+            if ( isOld && isBlackAndWhitePhoto )
             {
-                // Make a guess that old stuff isn't modern but also isnt' ancient
+                maxYear = 1900;
+                minYear = 1830;
+            }
+            else if ( isBlackAndWhitePhoto )
+            {
+                // Estimate of the timeline of black and white photos
+                maxYear = 1930;
+                minYear = 1830;
+            }
+            else if ( isOld )
+            {
+                // Make a guess that old stuff isn't modern but also isn't ancient
                 maxYear = 1900;
                 minYear = 1000;
             }
@@ -387,8 +399,12 @@ namespace AppraisalBot
             bool isOld = IsOld( analysisResult );
             float expensiveMultiplier = GetPriceExpensiveMultiplier( analysisResult );
             Console.WriteLine( "Is Old: " + isOld );
+            bool isBlackAndWhite = IsBlackAndWhite( analysisResult );
+            Console.WriteLine("Is Black and White: " + isBlackAndWhite );
+            bool isPhoto = IsPhoto( analysisResult );
+            Console.WriteLine("Is Photo: " + isPhoto);
 
-            Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, expensiveMultiplier );
+            Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier );
 
             //string comment = Comment.Get();
 
@@ -417,6 +433,29 @@ namespace AppraisalBot
             return analysisResult.Description.Tags.Contains( "old" );
         }
 
+        static bool IsBlackAndWhite( AnalysisResult analysisResult )
+        {
+            return analysisResult.Color.IsBWImg;
+        }
+
+        static bool IsPhoto( AnalysisResult analysisResult )
+        {
+            // Here is the definitions for enumeration types 
+
+            // ClipartType 
+            // -Non-clipart = 0,
+            // -ambiguous = 1,
+            // -normal-clipart = 2,
+            // -good-clipart = 3
+
+            // LineDrawingType
+            // -Non-LineDrawing = 0,
+            // -LineDrawing = 1.
+
+            // Return true if it's not line art and not clip art
+            return analysisResult.ImageType.LineDrawingType == 0
+            && analysisResult.ImageType.ClipArtType == 0;
+        }
         static float GetPriceExpensiveMultiplier( AnalysisResult analysisResult )
         {
             string[] expensiveTags = {
@@ -507,12 +546,12 @@ namespace AppraisalBot
             return color;
         }
 
-        static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, float expensiveMultiplier)
+        static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier)
         {
             Bitmap drawnBitmap = sourceImage.Clone();
 
             PriceRange priceRange = GetPriceRange( descriptionText, confidence, expensiveMultiplier );
-            int year = GetYear( drawnBitmap, isOld );
+            int year = GetYear( drawnBitmap, isOld, isBlackAndWhitePhoto );
 
             string fullCaption = descriptionText + String.Format( " (ca. {0})\n ${1:0,0}-${2:0,0}", year, priceRange.lowPrice, priceRange.highPrice);
 
