@@ -542,6 +542,9 @@ namespace AppraisalBot
                 "A tool",
                 "A weapon",
                 "A gun",
+                "A logo",
+                "A box",
+                "A sign",
             };
 
             bool isSimple = commonSimpleDescriptions.Contains( descriptionText );
