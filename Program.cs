@@ -493,6 +493,7 @@ namespace AppraisalBot
                 "large",
                 "colorful",
                 "old",
+                "vintage",
             };
 
             const float factor = 1.5f;
@@ -521,7 +522,7 @@ namespace AppraisalBot
                 " sitting on a table",
                 " sitting on a counter",
                 " on a table",
-                "a vintage photo of",
+                "a vintage photo of ",
                 " sitting on top of a table",
             };
 
@@ -547,6 +548,7 @@ namespace AppraisalBot
                 "A logo",
                 "A box",
                 "A sign",
+                "A envelope",
             };
 
             bool isSimple = commonSimpleDescriptions.Contains( descriptionText );
