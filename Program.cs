@@ -139,6 +139,8 @@ namespace AppraisalBot
                 int index = smallImageUrl.LastIndexOf( responseObject.results[i].largeImage.Substring(0,3) );
                 string largeImageUrl = smallImageUrl.Substring(0,index) + responseObject.results[i].largeImage;
 
+                Console.WriteLine("large url: " + largeImageUrl);
+
                 Bitmap image = DownloadImage( largeImageUrl );
                 bool doAnalysis = true;
                 if (image != null && doAnalysis)
@@ -289,7 +291,6 @@ namespace AppraisalBot
                 Console.WriteLine("Calling VisionServiceClient.AnalyzeImageAsync()...");
                 VisualFeature[] visualFeatures = new VisualFeature[] { 
                     VisualFeature.Adult,
-                    VisualFeature.Categories,
                     VisualFeature.Color,
                     VisualFeature.Description,
                     VisualFeature.ImageType
@@ -521,6 +522,7 @@ namespace AppraisalBot
                 " sitting on a counter",
                 " on a table",
                 "a vintage photo of",
+                " sitting on top of a table",
             };
 
             foreach (string text in stringsToRemove)
