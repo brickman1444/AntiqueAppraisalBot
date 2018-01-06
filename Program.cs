@@ -394,7 +394,6 @@ namespace AppraisalBot
             Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
 
             string foregroundColor = GetForegroundColor( analysisResult );
-            string descriptionText = GetDescription( caption, foregroundColor );
             float confidence = (float)caption.Confidence;
             bool isOld = IsOld( analysisResult );
             float expensiveMultiplier = GetPriceExpensiveMultiplier( analysisResult );
@@ -403,6 +402,8 @@ namespace AppraisalBot
             Console.WriteLine("Is Black and White: " + isBlackAndWhite );
             bool isPhoto = IsPhoto( analysisResult );
             Console.WriteLine("Is Photo: " + isPhoto);
+            string descriptionText = GetDescription( caption, foregroundColor, isOld, isBlackAndWhite );
+            Console.WriteLine("Final Description Text: " + descriptionText);
 
             Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier );
 
@@ -430,16 +431,41 @@ namespace AppraisalBot
 
         static bool IsOld( AnalysisResult analysisResult )
         {
-            return analysisResult.Description.Tags.Contains( "old" );
+            string[] oldTags = {
+                "old",
+                "vintage",
+            };
+
+            foreach (string tag in analysisResult.Description.Tags )
+            {
+                if ( oldTags.Contains( tag ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         static bool IsBlackAndWhite( AnalysisResult analysisResult )
         {
+            if ( analysisResult.Description.Tags.Contains( "photo")
+            && analysisResult.Description.Tags.Contains("vintage") )
+            {
+                // vintage photo means a black and white photo. Black and white photos are black and white.
+                return true;
+            }
+
             return analysisResult.Color.IsBWImg;
         }
 
         static bool IsPhoto( AnalysisResult analysisResult )
         {
+            if ( analysisResult.Description.Tags.Contains( "photo") )
+            {
+                return true;
+            }
+
             // Here is the definitions for enumeration types 
 
             // ClipartType 
@@ -484,7 +510,7 @@ namespace AppraisalBot
             return outMultiplier;
         }
 
-        static string GetDescription( Caption caption, string foregroundColor )
+        static string GetDescription( Caption caption, string foregroundColor, bool isOld, bool isBlackAndWhite )
         {
             // Filter and adjust the caption
             string descriptionText = caption.Text;
@@ -494,6 +520,7 @@ namespace AppraisalBot
                 " sitting on a table",
                 " sitting on a counter",
                 " on a table",
+                "a vintage photo of",
             };
 
             foreach (string text in stringsToRemove)
@@ -513,16 +540,35 @@ namespace AppraisalBot
                 "A cup of coffee",
                 "A bird",
                 "A tool",
+                "A weapon",
+                "A gun",
             };
 
             bool isSimple = commonSimpleDescriptions.Contains( descriptionText );
 
-            string color = foregroundColor.ToLower();
-
             if (isSimple)
             {
-                descriptionText = descriptionText.Substring(0,2) + color + " " + descriptionText.Substring(2);
-                Console.WriteLine("Added color to simple description: " + color);
+                if (isBlackAndWhite)
+                {
+                    if (isOld)
+                    {
+                        descriptionText = "An old " + descriptionText.Substring(2);
+                        Console.WriteLine("Added 'old' to simple description");
+                    }
+                    else
+                    {
+                        // TODO: Do something clever here?
+                        // I don't want to add a color here since I know the image is black and white.
+                        // This might be pretty rare since black and white images are often old
+                        Console.WriteLine("Description was simple but not old. Leaving simple description.");
+                    }
+                }
+                else
+                {
+                    string color = foregroundColor.ToLower();
+                    descriptionText = descriptionText.Substring(0,2) + color + " " + descriptionText.Substring(2);
+                    Console.WriteLine("Added color to simple description: " + color);
+                }
             }
 
             return descriptionText;
