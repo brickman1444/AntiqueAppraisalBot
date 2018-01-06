@@ -152,11 +152,18 @@ namespace AppraisalBot
                     {
                         tagString += tag + ", ";
                     }
-                    Console.WriteLine( tagString );
+                    Console.WriteLine( "Tags: " + tagString );
 
                     string accentColor = ColorTable.GetClosestColorName( ColorTable.GetColorFromHexString( analysisResult.Color.AccentColor ) );
 
                     Console.WriteLine("Foreground: " + analysisResult.Color.DominantColorForeground + " Background: " + analysisResult.Color.DominantColorBackground + " Accent: " + accentColor );
+
+                    string categoryString = "";
+                    foreach ( Category category in analysisResult.Categories )
+                    {
+                        categoryString += category.Name + ", ";
+                    }
+                    Console.WriteLine("Categories: " + categoryString);
 
                     Appraisal appraisal = CreateAppraisal( image, analysisResult );
 
@@ -292,6 +299,7 @@ namespace AppraisalBot
                 VisualFeature[] visualFeatures = new VisualFeature[] { 
                     VisualFeature.Adult,
                     VisualFeature.Color,
+                    VisualFeature.Categories,
                     VisualFeature.Description,
                     VisualFeature.ImageType
                 };
@@ -494,6 +502,7 @@ namespace AppraisalBot
                 "colorful",
                 "old",
                 "vintage",
+                "artifact",
             };
 
             const float factor = 1.5f;
