@@ -303,10 +303,13 @@ namespace AppraisalBot
                 VisualFeature[] visualFeatures = new VisualFeature[] { 
                     VisualFeature.Adult,
                     VisualFeature.Color,
-                    VisualFeature.Categories,
                     VisualFeature.Description,
                     VisualFeature.ImageType
                 };
+
+                // This is how you'd recognize celebrities like Henry Clay
+                //var result = VisionServiceClient.AnalyzeImageInDomainAsync( memoryStream, "celebrities" ).GetAwaiter().GetResult();
+
                 AnalysisResult analysisResult = VisionServiceClient.AnalyzeImageAsync( memoryStream, visualFeatures).GetAwaiter().GetResult();
                 return analysisResult;
             }
