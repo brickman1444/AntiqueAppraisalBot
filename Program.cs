@@ -522,6 +522,7 @@ namespace AppraisalBot
 
             string[] stringsToRemove = {
                 "a close up of ",
+                " that is sitting on a table",
                 " sitting on a table",
                 " sitting on a counter",
                 " on a table",
@@ -552,6 +553,7 @@ namespace AppraisalBot
                 "A box",
                 "A sign",
                 "A envelope",
+                "A pot",
             };
 
             bool isSimple = commonSimpleDescriptions.Contains( descriptionText );
