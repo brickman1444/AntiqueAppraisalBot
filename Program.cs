@@ -178,6 +178,10 @@ namespace AppraisalBot
                         }
                     }
 
+                    float paintingConfidence = PaintingConfidence.GetPaintingConfidence( analysisResult );
+
+                    Console.WriteLine( "Painting Confidence: " + paintingConfidence );
+
                     TweetAppraisal( appraisal );
                 }
             }
@@ -465,7 +469,7 @@ namespace AppraisalBot
                 return true;
             }
 
-            return analysisResult.Color.IsBWImg;
+            return analysisResult.IsBlackAndWhite();
         }
 
         static bool IsPhoto( AnalysisResult analysisResult )
@@ -475,21 +479,8 @@ namespace AppraisalBot
                 return true;
             }
 
-            // Here is the definitions for enumeration types 
-
-            // ClipartType 
-            // -Non-clipart = 0,
-            // -ambiguous = 1,
-            // -normal-clipart = 2,
-            // -good-clipart = 3
-
-            // LineDrawingType
-            // -Non-LineDrawing = 0,
-            // -LineDrawing = 1.
-
-            // Return true if it's not line art and not clip art
-            return analysisResult.ImageType.LineDrawingType == 0
-            && analysisResult.ImageType.ClipArtType == 0;
+            return !analysisResult.IsClipArt()
+            && !analysisResult.IsLineDrawing();
         }
         static float GetPriceExpensiveMultiplier( AnalysisResult analysisResult )
         {
