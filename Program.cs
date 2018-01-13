@@ -158,12 +158,15 @@ namespace AppraisalBot
 
                     Console.WriteLine("Foreground: " + analysisResult.Color.DominantColorForeground + " Background: " + analysisResult.Color.DominantColorBackground + " Accent: " + accentColor );
 
-                    string categoryString = "";
-                    foreach ( Category category in analysisResult.Categories )
+                    if ( analysisResult.Categories != null )
                     {
-                        categoryString += category.Name + ", ";
+                        string categoryString = "";
+                        foreach ( Category category in analysisResult.Categories )
+                        {
+                            categoryString += category.Name + ", ";
+                        }
+                        Console.WriteLine("Categories: " + categoryString);
                     }
-                    Console.WriteLine("Categories: " + categoryString);
 
                     Appraisal appraisal = CreateAppraisal( image, analysisResult );
 
