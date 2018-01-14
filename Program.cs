@@ -181,6 +181,9 @@ namespace AppraisalBot
                         }
                     }
 
+
+                    ImageTransforms.PerspectiveTransform( image );
+
                     float paintingConfidence = PaintingConfidence.GetPaintingConfidence( analysisResult );
 
                     Console.WriteLine( "Painting Confidence: " + paintingConfidence );
