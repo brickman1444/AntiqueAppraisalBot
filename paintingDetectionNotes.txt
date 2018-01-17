@@ -1,0 +1,31 @@
+
+image type:
+not black and white
+not lineart
+not clipart
+
+tags:
+view
+outdoor
+mountain
+grass
+posing 
+not stone
+
+descriptions:
+Louise Élisabeth Vigée Le Brun standing in a room
+Henry Clay posing for the camera
+a cat that is lying down and looking at the camera
+a view of a rocky mountain
+a painting on the wall
+a group of people posing for the camera
+a close up of a person (with > .6 confidence)
+
+category:
+scene_indoor
+people_
+	detail:
+		celebrities
+			someone 
+
+Do something else with text

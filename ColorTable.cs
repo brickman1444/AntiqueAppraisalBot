@@ -43,10 +43,7 @@ namespace AppraisalBot
 
         public static Rgba32 GetColorFromHexString( string hexString )
         {
-            byte r = Convert.ToByte(hexString.Substring(0,2), 16);
-            byte g = Convert.ToByte(hexString.Substring(2,2), 16);
-            byte b = Convert.ToByte(hexString.Substring(4,2), 16);
-            return new Rgba32( r, g, b );
+            return Rgba32.FromHex( hexString );
         }
 
         public static string GetClosestColorName( Rgba32 color )
