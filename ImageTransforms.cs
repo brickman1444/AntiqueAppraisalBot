@@ -55,36 +55,28 @@ namespace AppraisalBot
                 (float)solveResults[2], (float)solveResults[5], 1.0f,                   0.0f,
                 0.0f,                   0.0f,                   0.0f,                   1.0f);
 
-            // Matrix4x4 invertedPerspectiveTransform = new Matrix4x4();
-            // Matrix4x4.Invert( perspectiveTransform, out invertedPerspectiveTransform );
-
-            // double[,] testTransform = {
-            //    { solveResults[0], solveResults[3], solveResults[6], 0.0f, },
-            //    { solveResults[1], solveResults[4], solveResults[7], 0.0f, },
-            //    { solveResults[2], solveResults[5], 1.0f,            0.0f, },
-            //    { 0.0f,            0.0f,            0.0f,            0.0f  } };
-
-            // double[,] testTransformInvert = StarMathLib.StarMath.inverse( testTransform );
+            Matrix4x4 invertedPerspectiveTransform = new Matrix4x4();
+            Matrix4x4.Invert( perspectiveTransform, out invertedPerspectiveTransform );
 
             Bitmap imageCopy = new Bitmap( sourceImage.Width, sourceImage.Height );
 
             foreach ( ImageFrame<Rgba32> sourceFrame in sourceImage.Frames )
             {
-                for ( int sourceY = 0; sourceY < imageCopy.Height; sourceY++ )
+                for ( int destinationY = 0; destinationY < imageCopy.Height; destinationY++ )
                 {
-                    for ( int sourceX = 0; sourceX < imageCopy.Width; sourceX++ )
+                    for ( int destinationX = 0; destinationX < imageCopy.Width; destinationX++ )
                     {
-                        Vector4 sourcePoint = new Vector4( sourceX, sourceY, 1.0f, 0.0f );
+                        Vector4 destinationPoint = new Vector4( destinationX, destinationY, 1.0f, 0.0f );
 
-                        Vector4 destinationPoint = Vector4.Transform( sourcePoint, perspectiveTransform );
+                        Vector4 sourcePoint = Vector4.Transform( destinationPoint, invertedPerspectiveTransform );
 
-                        destinationPoint /= destinationPoint.Z;
+                        sourcePoint /= sourcePoint.Z; // Normalize 2D homogenous coordinates
 
-                        // This is where you'd want to sample differently if you're into that
-                        if ( destinationPoint.X >= 0 && destinationPoint.Y >= 0
-                        && destinationPoint.X < imageCopy.Width && destinationPoint.Y < imageCopy.Height )
+                        if ( sourcePoint.X >= 0 && sourcePoint.Y >= 0
+                        && sourcePoint.X < imageCopy.Width && sourcePoint.Y < imageCopy.Height )
                         {
-                            imageCopy[ (int)destinationPoint.X, (int)destinationPoint.Y ] = sourceImage[ sourceX, sourceY ];
+                            // This is where you'd want to sample differently if you're into that
+                            imageCopy[ destinationX, destinationY ] = sourceImage[ (int)sourcePoint.X, (int)sourcePoint.Y ];
                         }
                     }
                 }
