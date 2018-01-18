@@ -12,24 +12,15 @@ namespace AppraisalBot
     {
         public static void PerspectiveTransform( Bitmap sourceImage )
         {
-            using ( Bitmap transformedImage = sourceImage.Clone( ctx => ctx.Resize( 10, 10 ) ) )
-            {
-                if ( Directory.Exists("images"))
-                {
-                    string destinationFilePath = @"images/transformed.jpg";
-                    transformedImage.Save( destinationFilePath );
-                }
-            }
-
             PointF r0 = new PointF( 0,                 0 );
             PointF r1 = new PointF( sourceImage.Width, 0 );
             PointF r2 = new PointF( 0,                 sourceImage.Height );
             PointF r3 = new PointF( sourceImage.Width, sourceImage.Height );
 
-            PointF r0prime = new PointF( 125, 50 );
-            PointF r1prime = new PointF( 200, 100 );
-            PointF r2prime = new PointF( 50, 125 );
-            PointF r3prime = new PointF( 225, 200 );
+            PointF r0prime = new PointF( 125, sourceImage.Height / 2 );
+            PointF r1prime = new PointF( 200, sourceImage.Height / 2 );
+            PointF r2prime = new PointF( 0, (sourceImage.Height * 3) / 4 );
+            PointF r3prime = new PointF( sourceImage.Width, sourceImage.Height );
 
             // Reference for where these numbers come from:
             // http://www.vis.uky.edu/~ryang/Teaching/cs635-2016spring/Lectures/05-geo_trans_1.pdf
@@ -62,10 +53,48 @@ namespace AppraisalBot
                 (float)solveResults[0], (float)solveResults[3], (float)solveResults[6], 0.0f,
                 (float)solveResults[1], (float)solveResults[4], (float)solveResults[7], 0.0f,
                 (float)solveResults[2], (float)solveResults[5], 1.0f,                   0.0f,
-                0.0f,                   0.0f,                   0.0f,                   0.0f);
+                0.0f,                   0.0f,                   0.0f,                   1.0f);
 
-            Vector4 testPoint2 = System.Numerics.Vector4.Transform( new Vector4( r0.X, r0.Y, 1.0f, 0.0f ), perspectiveTransform );
-            Vector4 normalizedTestPoint2 = testPoint2 / testPoint2.Z;
+            // Matrix4x4 invertedPerspectiveTransform = new Matrix4x4();
+            // Matrix4x4.Invert( perspectiveTransform, out invertedPerspectiveTransform );
+
+            // double[,] testTransform = {
+            //    { solveResults[0], solveResults[3], solveResults[6], 0.0f, },
+            //    { solveResults[1], solveResults[4], solveResults[7], 0.0f, },
+            //    { solveResults[2], solveResults[5], 1.0f,            0.0f, },
+            //    { 0.0f,            0.0f,            0.0f,            0.0f  } };
+
+            // double[,] testTransformInvert = StarMathLib.StarMath.inverse( testTransform );
+
+            Bitmap imageCopy = new Bitmap( sourceImage.Width, sourceImage.Height );
+
+            foreach ( ImageFrame<Rgba32> sourceFrame in sourceImage.Frames )
+            {
+                for ( int sourceY = 0; sourceY < imageCopy.Height; sourceY++ )
+                {
+                    for ( int sourceX = 0; sourceX < imageCopy.Width; sourceX++ )
+                    {
+                        Vector4 sourcePoint = new Vector4( sourceX, sourceY, 1.0f, 0.0f );
+
+                        Vector4 destinationPoint = Vector4.Transform( sourcePoint, perspectiveTransform );
+
+                        destinationPoint /= destinationPoint.Z;
+
+                        // This is where you'd want to sample differently if you're into that
+                        if ( destinationPoint.X >= 0 && destinationPoint.Y >= 0
+                        && destinationPoint.X < imageCopy.Width && destinationPoint.Y < imageCopy.Height )
+                        {
+                            imageCopy[ (int)destinationPoint.X, (int)destinationPoint.Y ] = sourceImage[ sourceX, sourceY ];
+                        }
+                    }
+                }
+            }
+
+            if ( Directory.Exists("images"))
+            {
+                string destinationFilePath = @"images/transformed.jpg";
+                imageCopy.Save( destinationFilePath );
+            }
         }
     }
 
