@@ -139,7 +139,7 @@ namespace AppraisalBot
             {
                 Console.WriteLine("-----------------------------------------------------------------------");
 
-                Console.WriteLine("small url: " + responseObject.results[i].image);
+                //Console.WriteLine("small url: " + responseObject.results[i].image);
                 //Console.WriteLine("large url: " + responseObject.results[i].largeImage );
 
                 string smallImageUrl = responseObject.results[i].image;
@@ -147,8 +147,16 @@ namespace AppraisalBot
                 string largeImageUrl = smallImageUrl.Substring(0,index) + responseObject.results[i].largeImage;
 
                 Console.WriteLine("large url: " + largeImageUrl);
+                Console.WriteLine("Listing page: https://www.metmuseum.org" + responseObject.results[i].url);
 
                 Bitmap image = DownloadImage( largeImageUrl );
+
+                if ( Directory.Exists("images"))
+                {
+                    string destinationFilePath = @"images/sourceImage" + i + ".jpg";
+                    image.Save( destinationFilePath );
+                }
+
                 bool doAnalysis = true;
                 if (image != null && doAnalysis)
                 {
@@ -179,7 +187,7 @@ namespace AppraisalBot
 
                     if ( Directory.Exists("images"))
                     {
-                        string destinationFilePath = @"images/image" + i + ".jpg";
+                        string destinationFilePath = @"images/finalImage" + i + ".jpg";
                         appraisal.image.Save( destinationFilePath );
 
                         using (StreamWriter file = File.CreateText(@"images/comment" + i + ".txt") )
@@ -187,13 +195,6 @@ namespace AppraisalBot
                             file.WriteLine(appraisal.comment);
                         }
                     }
-
-
-                    ImageTransforms.PerspectiveTransform( image );
-
-                    float paintingConfidence = PaintingConfidence.GetPaintingConfidence( analysisResult );
-
-                    Console.WriteLine( "Painting Confidence: " + paintingConfidence );
 
                     TweetAppraisal( appraisal );
                 }
@@ -433,8 +434,10 @@ namespace AppraisalBot
             Console.WriteLine("Is Photo: " + isPhoto);
             string descriptionText = GetDescription( caption, foregroundColor, isOld, isBlackAndWhite );
             Console.WriteLine("Final Description Text: " + descriptionText);
+            bool isPainting = PaintingDetection.IsPainting( analysisResult );
+            Console.WriteLine("Is Painting: " + isPainting);
 
-            Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier );
+            Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting );
 
             //string comment = Comment.Get();
 
@@ -617,9 +620,18 @@ namespace AppraisalBot
             return color;
         }
 
-        static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier)
+        static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier, bool isPainting)
         {
-            Bitmap drawnBitmap = sourceImage.Clone();
+            Bitmap drawnBitmap = null;
+            
+            if ( isPainting )
+            {
+                drawnBitmap = ImageTransforms.ComposeImageOntoPhoto( sourceImage );
+            }
+            else
+            {
+                drawnBitmap = sourceImage.Clone();
+            }
 
             PriceRange priceRange = GetPriceRange( descriptionText, confidence, expensiveMultiplier );
             int year = GetYear( drawnBitmap, isOld, isBlackAndWhitePhoto );

@@ -5,8 +5,12 @@ using Microsoft.ProjectOxford.Vision.Contract;
 
 namespace AppraisalBot
 {
-    static class PaintingConfidence
+    static class PaintingDetection
     {
+        public static bool IsPainting(AnalysisResult analysisResult)
+        {
+            return GetPaintingConfidence(analysisResult) >= 0.5f;
+        }
 
         public static float GetPaintingConfidence(AnalysisResult analysisResult)
         {

@@ -11,17 +11,28 @@ namespace AppraisalBot
 {
     static class ImageTransforms
     {
-        public static void PerspectiveTransform( Bitmap sourceImage )
+        public static Bitmap ComposeImageOntoPhoto( Bitmap sourceArtImage )
         {
-            PointF r0 = new PointF( 0,                 0 );
-            PointF r1 = new PointF( sourceImage.Width, 0 );
-            PointF r2 = new PointF( 0,                 sourceImage.Height );
-            PointF r3 = new PointF( sourceImage.Width, sourceImage.Height );
-
             PointF r0prime = new PointF( 332, 111 );
             PointF r1prime = new PointF( 692, 114 );
             PointF r2prime = new PointF( 344, 491 );
             PointF r3prime = new PointF( 670, 533 );
+
+            Bitmap photoImage = Image.Load( "sourceArt/antiquesRoadshowSource.jpg" );
+
+            return PerspectiveTransform( sourceArtImage, photoImage, r0prime, r1prime, r2prime, r3prime );
+        }
+
+        public static Bitmap PerspectiveTransform( Bitmap sourceArtImage, Bitmap destinationImage, PointF r0prime, PointF r1prime, PointF r2prime, PointF r3prime )
+        {
+            // Order chosen arbitrarily
+            // 0    1
+            //
+            // 2    3
+            PointF r0 = new PointF( 0,                    0 );
+            PointF r1 = new PointF( sourceArtImage.Width, 0 );
+            PointF r2 = new PointF( 0,                    sourceArtImage.Height );
+            PointF r3 = new PointF( sourceArtImage.Width, sourceArtImage.Height );
 
             // Reference for where these numbers come from:
             // http://www.vis.uky.edu/~ryang/Teaching/cs635-2016spring/Lectures/05-geo_trans_1.pdf
@@ -59,13 +70,13 @@ namespace AppraisalBot
             Matrix4x4 invertedPerspectiveTransform = new Matrix4x4();
             Matrix4x4.Invert( perspectiveTransform, out invertedPerspectiveTransform );
 
-            Bitmap imageCopy = Image.Load( "sourceArt/antiquesRoadshowSource.jpg" );
 
-            foreach ( ImageFrame<Rgba32> sourceFrame in sourceImage.Frames )
+            foreach ( ImageFrame<Rgba32> sourceFrame in sourceArtImage.Frames )
             {
-                for ( int destinationY = 0; destinationY < imageCopy.Height; destinationY++ )
+                // This could probably be optimized to only iterate through the pixels that matter.
+                for ( int destinationY = 0; destinationY < destinationImage.Height; destinationY++ )
                 {
-                    for ( int destinationX = 0; destinationX < imageCopy.Width; destinationX++ )
+                    for ( int destinationX = 0; destinationX < destinationImage.Width; destinationX++ )
                     {
                         Vector4 destinationPoint = new Vector4( destinationX, destinationY, 1.0f, 0.0f );
 
@@ -74,20 +85,16 @@ namespace AppraisalBot
                         sourcePoint /= sourcePoint.Z; // Normalize 2D homogenous coordinates
 
                         if ( sourcePoint.X >= 0 && sourcePoint.Y >= 0
-                        && sourcePoint.X < sourceImage.Width && sourcePoint.Y < sourceImage.Height )
+                        && sourcePoint.X < sourceArtImage.Width && sourcePoint.Y < sourceArtImage.Height )
                         {
                             // This is where you'd want to sample differently if you're into that
-                            imageCopy[ destinationX, destinationY ] = sourceImage[ (int)sourcePoint.X, (int)sourcePoint.Y ];
+                            destinationImage[ destinationX, destinationY ] = sourceArtImage[ (int)sourcePoint.X, (int)sourcePoint.Y ];
                         }
                     }
                 }
             }
 
-            if ( Directory.Exists("images"))
-            {
-                string destinationFilePath = @"images/transformed.jpg";
-                imageCopy.Save( destinationFilePath );
-            }
+            return destinationImage;
         }
     }
 
