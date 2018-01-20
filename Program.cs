@@ -88,7 +88,14 @@ namespace AppraisalBot
                 string[] filePaths = Directory.GetFiles(@"images\");
                 foreach (string filePath in filePaths)
                 {
-                    File.Delete(filePath);
+                    try
+                    {
+                        File.Delete(filePath);
+                    }
+                    catch ( System.IO.IOException e )
+                    {
+                        Console.WriteLine( e.ToString() );
+                    }
                 }
             }
 

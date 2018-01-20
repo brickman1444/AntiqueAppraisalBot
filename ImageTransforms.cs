@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Numerics;
 
@@ -17,10 +18,10 @@ namespace AppraisalBot
             PointF r2 = new PointF( 0,                 sourceImage.Height );
             PointF r3 = new PointF( sourceImage.Width, sourceImage.Height );
 
-            PointF r0prime = new PointF( 125, sourceImage.Height / 2 );
-            PointF r1prime = new PointF( 200, sourceImage.Height / 2 );
-            PointF r2prime = new PointF( 0, (sourceImage.Height * 3) / 4 );
-            PointF r3prime = new PointF( sourceImage.Width, sourceImage.Height );
+            PointF r0prime = new PointF( 332, 111 );
+            PointF r1prime = new PointF( 692, 114 );
+            PointF r2prime = new PointF( 344, 491 );
+            PointF r3prime = new PointF( 670, 533 );
 
             // Reference for where these numbers come from:
             // http://www.vis.uky.edu/~ryang/Teaching/cs635-2016spring/Lectures/05-geo_trans_1.pdf
@@ -58,7 +59,7 @@ namespace AppraisalBot
             Matrix4x4 invertedPerspectiveTransform = new Matrix4x4();
             Matrix4x4.Invert( perspectiveTransform, out invertedPerspectiveTransform );
 
-            Bitmap imageCopy = new Bitmap( sourceImage.Width, sourceImage.Height );
+            Bitmap imageCopy = Image.Load( "sourceArt/antiquesRoadshowSource.jpg" );
 
             foreach ( ImageFrame<Rgba32> sourceFrame in sourceImage.Frames )
             {
@@ -73,7 +74,7 @@ namespace AppraisalBot
                         sourcePoint /= sourcePoint.Z; // Normalize 2D homogenous coordinates
 
                         if ( sourcePoint.X >= 0 && sourcePoint.Y >= 0
-                        && sourcePoint.X < imageCopy.Width && sourcePoint.Y < imageCopy.Height )
+                        && sourcePoint.X < sourceImage.Width && sourcePoint.Y < sourceImage.Height )
                         {
                             // This is where you'd want to sample differently if you're into that
                             imageCopy[ destinationX, destinationY ] = sourceImage[ (int)sourcePoint.X, (int)sourcePoint.Y ];
