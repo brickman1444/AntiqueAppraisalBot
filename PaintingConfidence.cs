@@ -1,4 +1,4 @@
-
+using System;
 using System.Linq;
 
 using Microsoft.ProjectOxford.Vision.Contract;
@@ -36,16 +36,20 @@ namespace AppraisalBot
             string[] paintingTags = {
                 "view",
                 "outdoor",
+                "indoor",
                 "mountain",
                 "grass",
                 "posing",
                 "photo",
                 "painting",
+                "person",
                 "man",
                 "woman",
                 "mirror",
                 "people",
                 "group",
+                "clouds",
+                "sitting",
             };
 
             foreach ( string tag in paintingTags )
@@ -89,6 +93,8 @@ namespace AppraisalBot
                     cumulativeConfidence += 0.4f;
                 }
             }
+
+            Console.WriteLine("Painting confidence: " + cumulativeConfidence);
 
             return cumulativeConfidence;
         }

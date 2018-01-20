@@ -13,26 +13,40 @@ namespace AppraisalBot
     {
         public static Bitmap ComposeImageOntoPhoto( Bitmap sourceArtImage )
         {
-            PointF r0prime = new PointF( 332, 111 );
-            PointF r1prime = new PointF( 692, 114 );
-            PointF r2prime = new PointF( 344, 491 );
-            PointF r3prime = new PointF( 670, 533 );
+            Vector2 r0prime = new Vector2( 332, 111 );
+            Vector2 r1prime = new Vector2( 692, 114 );
+            Vector2 r2prime = new Vector2( 344, 491 );
+            Vector2 r3prime = new Vector2( 670, 533 );
+
+            float leftSideHeight = Vector2.Distance( r0prime, r2prime );
+            float rightSideHeight = Vector2.Distance( r1prime, r3prime );
+
+            float bottomSideWidth = Vector2.Distance( r2prime, r3prime );
+
+            // Keeping the source image's aspect ratio, what would it's height be in the destination
+            float scaledHeight = (float)sourceArtImage.Height / (float)sourceArtImage.Width * bottomSideWidth;
+
+            if ( scaledHeight > leftSideHeight )
+            {
+                r0prime = Vector2.Normalize(r0prime - r2prime) * scaledHeight + r2prime;
+                r1prime = Vector2.Normalize(r1prime - r3prime) * scaledHeight * rightSideHeight / leftSideHeight + r3prime;
+            }
 
             Bitmap photoImage = Image.Load( "sourceArt/antiquesRoadshowSource.jpg" );
 
             return PerspectiveTransform( sourceArtImage, photoImage, r0prime, r1prime, r2prime, r3prime );
         }
 
-        public static Bitmap PerspectiveTransform( Bitmap sourceArtImage, Bitmap destinationImage, PointF r0prime, PointF r1prime, PointF r2prime, PointF r3prime )
+        public static Bitmap PerspectiveTransform( Bitmap sourceArtImage, Bitmap destinationImage, Vector2 r0prime, Vector2 r1prime, Vector2 r2prime, Vector2 r3prime )
         {
             // Order chosen arbitrarily
             // 0    1
             //
             // 2    3
-            PointF r0 = new PointF( 0,                    0 );
-            PointF r1 = new PointF( sourceArtImage.Width, 0 );
-            PointF r2 = new PointF( 0,                    sourceArtImage.Height );
-            PointF r3 = new PointF( sourceArtImage.Width, sourceArtImage.Height );
+            Vector2 r0 = new Vector2( 0,                    0 );
+            Vector2 r1 = new Vector2( sourceArtImage.Width, 0 );
+            Vector2 r2 = new Vector2( 0,                    sourceArtImage.Height );
+            Vector2 r3 = new Vector2( sourceArtImage.Width, sourceArtImage.Height );
 
             // Reference for where these numbers come from:
             // http://www.vis.uky.edu/~ryang/Teaching/cs635-2016spring/Lectures/05-geo_trans_1.pdf
