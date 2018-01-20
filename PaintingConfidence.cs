@@ -7,20 +7,25 @@ namespace AppraisalBot
 {
     static class PaintingDetection
     {
-        public static bool IsPainting(AnalysisResult analysisResult)
+        public static bool IsPainting(AnalysisBlob analysisResult)
         {
             return GetPaintingConfidence(analysisResult) >= 0.5f;
         }
 
-        public static float GetPaintingConfidence(AnalysisResult analysisResult)
+        public static float GetPaintingConfidence(AnalysisBlob analysisResult)
         {
-            if ( analysisResult.IsClipArt()
-            || analysisResult.IsLineDrawing() )
+            if ( analysisResult.generalAnalysisResult.IsClipArt()
+            || analysisResult.generalAnalysisResult.IsLineDrawing() )
             {
                 return 0.0f;
             }
 
-            if ( analysisResult.IsBlackAndWhite() )
+            if ( analysisResult.celebrityAnalysisResult.celebrities.Count() > 0 )
+            {
+                return 1.0f;
+            }
+
+            if ( analysisResult.generalAnalysisResult.IsBlackAndWhite() )
             {
                 return 0.0f;
             }
@@ -45,7 +50,7 @@ namespace AppraisalBot
 
             foreach ( string tag in paintingTags )
             {
-                if ( analysisResult.Description.Tags.Contains( tag ) )
+                if ( analysisResult.generalAnalysisResult.Description.Tags.Contains( tag ) )
                 {
                     cumulativeConfidence += 0.1f;
                 }
@@ -60,7 +65,7 @@ namespace AppraisalBot
 
             foreach ( string tag in notPaintingTags )
             {
-                if ( analysisResult.Description.Tags.Contains( tag ) )
+                if ( analysisResult.generalAnalysisResult.Description.Tags.Contains( tag ) )
                 {
                     cumulativeConfidence -= 0.1f;
                 }
@@ -79,7 +84,7 @@ namespace AppraisalBot
 
             foreach ( string description in paintingDescriptions )
             {
-                if ( analysisResult.Description.Captions[0].Text.Contains( description ) )
+                if ( analysisResult.generalAnalysisResult.Description.Captions[0].Text.Contains( description ) )
                 {
                     cumulativeConfidence += 0.4f;
                 }

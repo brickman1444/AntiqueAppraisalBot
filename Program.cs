@@ -22,6 +22,21 @@ namespace AppraisalBot
 {
     public class MetResponse
     {
+        public class MetResult
+        {
+            public string title;
+            public string description;
+            public string teaserText;
+            public string url;
+            public string image;
+            public string regularImage;
+            public string largeImage;
+            public string date;
+            public string medium;
+            public string accessionNumber;
+            public string galleryInformation;
+        }
+
         public Object request;
         public List<MetResult> results;
         public List<Object> facets;
@@ -33,19 +48,24 @@ namespace AppraisalBot
         public string correctedQuery;
     }
 
-    public class MetResult
+    public class CelebrityAnalysisResult
     {
-        public string title;
-        public string description;
-        public string teaserText;
-        public string url;
-        public string image;
-        public string regularImage;
-        public string largeImage;
-        public string date;
-        public string medium;
-        public string accessionNumber;
-        public string galleryInformation;
+        public class Celebrity
+        {
+            public class FaceRectangle
+            {
+                public int top;
+                public int left;
+                public int width;
+                public int height;
+            }
+
+            public FaceRectangle faceRectangle;
+            public string name;
+            public float confidence;
+        }
+
+        public List<Celebrity> celebrities;
     }
 
     struct PriceRange
@@ -64,6 +84,12 @@ namespace AppraisalBot
             image = inImage;
             comment = inComment;
         }
+    }
+
+    class AnalysisBlob
+    {
+        public AnalysisResult generalAnalysisResult;
+        public CelebrityAnalysisResult celebrityAnalysisResult;
     }
 
     public class Program
@@ -160,30 +186,42 @@ namespace AppraisalBot
                 bool doAnalysis = true;
                 if (image != null && doAnalysis)
                 {
-                    AnalysisResult analysisResult = AnalyzeImage( image );
+                    AnalysisBlob analysisBlob = new AnalysisBlob();
+                    analysisBlob.generalAnalysisResult = AnalyzeImage( image );
+                    analysisBlob.celebrityAnalysisResult = AnalyzeImageForCelebrities( image );
 
                     string tagString = "";
-                    foreach ( string tag in analysisResult.Description.Tags )
+                    foreach ( string tag in analysisBlob.generalAnalysisResult.Description.Tags )
                     {
                         tagString += tag + ", ";
                     }
                     Console.WriteLine( "Tags: " + tagString );
 
-                    string accentColor = ColorTable.GetClosestColorName( ColorTable.GetColorFromHexString( analysisResult.Color.AccentColor ) );
+                    string accentColor = ColorTable.GetClosestColorName( ColorTable.GetColorFromHexString( analysisBlob.generalAnalysisResult.Color.AccentColor ) );
 
-                    Console.WriteLine("Foreground: " + analysisResult.Color.DominantColorForeground + " Background: " + analysisResult.Color.DominantColorBackground + " Accent: " + accentColor );
+                    Console.WriteLine("Foreground: " + analysisBlob.generalAnalysisResult.Color.DominantColorForeground + " Background: " + analysisBlob.generalAnalysisResult.Color.DominantColorBackground + " Accent: " + accentColor );
 
-                    if ( analysisResult.Categories != null )
+                    if ( analysisBlob.generalAnalysisResult.Categories != null )
                     {
                         string categoryString = "";
-                        foreach ( Category category in analysisResult.Categories )
+                        foreach ( Category category in analysisBlob.generalAnalysisResult.Categories )
                         {
                             categoryString += category.Name + ", ";
                         }
                         Console.WriteLine("Categories: " + categoryString);
                     }
 
-                    Appraisal appraisal = CreateAppraisal( image, analysisResult );
+                    if ( HasCelebrities( analysisBlob.celebrityAnalysisResult ) )
+                    {
+                        string celebrityString = "";
+                        foreach ( CelebrityAnalysisResult.Celebrity celebrity in analysisBlob.celebrityAnalysisResult.celebrities )
+                        {
+                            celebrityString += celebrity.name + ", ";
+                        }
+                        Console.WriteLine("Celebrities: " + celebrityString);
+                    }
+
+                    Appraisal appraisal = CreateAppraisal( image, analysisBlob );
 
                     if ( Directory.Exists("images"))
                     {
@@ -321,9 +359,6 @@ namespace AppraisalBot
                     VisualFeature.ImageType
                 };
 
-                // This is how you'd recognize celebrities like Henry Clay
-                //var result = VisionServiceClient.AnalyzeImageInDomainAsync( memoryStream, "celebrities" ).GetAwaiter().GetResult();
-
                 AnalysisResult analysisResult = VisionServiceClient.AnalyzeImageAsync( memoryStream, visualFeatures).GetAwaiter().GetResult();
                 return analysisResult;
             }
@@ -358,6 +393,28 @@ namespace AppraisalBot
                 }
             }
         }
+
+        static CelebrityAnalysisResult AnalyzeImageForCelebrities(Bitmap sourceImage)
+        {
+            VisionServiceClient VisionServiceClient = new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
+
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                sourceImage.SaveAsPng(memoryStream);
+                memoryStream.Position = 0;
+
+                Console.WriteLine("Calling VisionServiceClient.AnalyzeImageInDomainAsync()...");
+
+                // This is how you'd recognize celebrities like Henry Clay
+                Microsoft.ProjectOxford.Vision.Contract.AnalysisInDomainResult result = VisionServiceClient.AnalyzeImageInDomainAsync( memoryStream, "celebrities" ).GetAwaiter().GetResult();
+
+                Newtonsoft.Json.Linq.JObject jsonObj = result.Result as Newtonsoft.Json.Linq.JObject;
+
+                CelebrityAnalysisResult celebResult = jsonObj.ToObject<CelebrityAnalysisResult>() as CelebrityAnalysisResult;
+                return celebResult;
+            }
+        }
+
         static PriceRange GetPriceRange(string caption, double confidence, float expensiveMultiplier)
         {
             PriceRange priceRange;
@@ -418,24 +475,26 @@ namespace AppraisalBot
             return year;
         }
 
-        static Appraisal CreateAppraisal( Bitmap sourceImage, AnalysisResult analysisResult )
+        static Appraisal CreateAppraisal( Bitmap sourceImage, AnalysisBlob analysisResult )
         {
-            Caption caption = GetCaption( analysisResult );
+            Caption caption = GetCaption( analysisResult.generalAnalysisResult );
             Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
 
-            string foregroundColor = GetForegroundColor( analysisResult );
+            string foregroundColor = GetForegroundColor( analysisResult.generalAnalysisResult );
             float confidence = (float)caption.Confidence;
-            bool isOld = IsOld( analysisResult );
-            float expensiveMultiplier = GetPriceExpensiveMultiplier( analysisResult );
+            bool isOld = IsOld( analysisResult.generalAnalysisResult );
+            float expensiveMultiplier = GetPriceExpensiveMultiplier( analysisResult.generalAnalysisResult );
             Console.WriteLine( "Is Old: " + isOld );
-            bool isBlackAndWhite = IsBlackAndWhite( analysisResult );
+            bool isBlackAndWhite = IsBlackAndWhite( analysisResult.generalAnalysisResult );
             Console.WriteLine("Is Black and White: " + isBlackAndWhite );
-            bool isPhoto = IsPhoto( analysisResult );
-            Console.WriteLine("Is Photo: " + isPhoto);
             string descriptionText = GetDescription( caption, foregroundColor, isOld, isBlackAndWhite );
             Console.WriteLine("Final Description Text: " + descriptionText);
             bool isPainting = PaintingDetection.IsPainting( analysisResult );
             Console.WriteLine("Is Painting: " + isPainting);
+            bool isPhoto = !isPainting && IsPhoto( analysisResult.generalAnalysisResult );
+            Console.WriteLine("Is Photo: " + isPhoto);
+            bool hasCelebrities = HasCelebrities( analysisResult.celebrityAnalysisResult );
+            Console.WriteLine("Has Celebrities: " + hasCelebrities);
 
             Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting );
 
@@ -501,6 +560,12 @@ namespace AppraisalBot
             return !analysisResult.IsClipArt()
             && !analysisResult.IsLineDrawing();
         }
+
+        static bool HasCelebrities( CelebrityAnalysisResult celebrityResult )
+        {
+            return celebrityResult.celebrities.Count > 0;
+        }
+
         static float GetPriceExpensiveMultiplier( AnalysisResult analysisResult )
         {
             string[] expensiveTags = {
