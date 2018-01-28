@@ -498,6 +498,8 @@ namespace AppraisalBot
             Console.WriteLine("Is Photo: " + isPhoto);
             bool hasCelebrities = HasCelebrities( analysisResult.celebrityAnalysisResult );
             Console.WriteLine("Has Celebrities: " + hasCelebrities);
+            bool isSign = SignDetection.IsSign( analysisResult );
+            Console.WriteLine("Is Sign: " + isSign);
 
             Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting );
 
