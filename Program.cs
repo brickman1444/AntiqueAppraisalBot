@@ -171,9 +171,12 @@ namespace AppraisalBot
                 string smallImageUrl = responseObject.results[i].image;
                 int index = smallImageUrl.LastIndexOf( responseObject.results[i].largeImage.Substring(0,3) );
                 string largeImageUrl = smallImageUrl.Substring(0,index) + responseObject.results[i].largeImage;
-
                 Console.WriteLine("large url: " + largeImageUrl);
-                Console.WriteLine("Listing page: https://www.metmuseum.org" + responseObject.results[i].url);
+                
+                string fullListingURL = "https://www.metmuseum.org" + responseObject.results[i].url;
+                int questionMarkIndex = fullListingURL.LastIndexOf('?');
+                string shortenedURL = fullListingURL.Substring(0,questionMarkIndex);
+                Console.WriteLine("Listing page: " + shortenedURL);
 
                 Bitmap image = DownloadImage( largeImageUrl );
 
