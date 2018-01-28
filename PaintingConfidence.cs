@@ -38,6 +38,7 @@ namespace AppraisalBot
                 "outdoor",
                 "indoor",
                 "mountain",
+                "hill",
                 "grass",
                 "posing",
                 "photo",
@@ -50,6 +51,9 @@ namespace AppraisalBot
                 "group",
                 "clouds",
                 "sitting",
+                "river",
+                "tree",
+                "lake",
             };
 
             foreach ( string tag in paintingTags )
