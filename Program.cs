@@ -180,15 +180,15 @@ namespace AppraisalBot
 
                 Bitmap image = DownloadImage( largeImageUrl );
 
-                if ( Directory.Exists("images"))
-                {
-                    string destinationFilePath = @"images/sourceImage" + i + ".jpg";
-                    image.Save( destinationFilePath );
-                }
-
                 bool doAnalysis = true;
                 if (image != null && doAnalysis)
                 {
+                    if ( Directory.Exists("images"))
+                    {
+                        string destinationFilePath = @"images/sourceImage" + i + ".jpg";
+                        image.Save( destinationFilePath );
+                    }
+
                     AnalysisBlob analysisBlob = new AnalysisBlob();
                     analysisBlob.generalAnalysisResult = AnalyzeImage( image );
                     analysisBlob.celebrityAnalysisResult = AnalyzeImageForCelebrities( image );
