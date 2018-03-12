@@ -13,10 +13,32 @@ namespace AppraisalBot
     {
         public static Bitmap ComposeImageOntoPhoto( Bitmap sourceArtImage )
         {
-            Vector2 r0prime = new Vector2( 332, 111 );
-            Vector2 r1prime = new Vector2( 692, 114 );
-            Vector2 r2prime = new Vector2( 344, 491 );
-            Vector2 r3prime = new Vector2( 670, 533 );
+            bool isWide = sourceArtImage.Width > sourceArtImage.Height;
+
+            Vector2 r0prime = new Vector2();
+            Vector2 r1prime = new Vector2();
+            Vector2 r2prime = new Vector2();
+            Vector2 r3prime = new Vector2();
+            string backgroundImageName = "";
+
+            // find which image fits the source best
+
+            if ( isWide )
+            {
+                r0prime = new Vector2( 217, 168 );
+                r1prime = new Vector2( 784, 161 );
+                r2prime = new Vector2( 199, 597 );
+                r3prime = new Vector2( 803, 593 );
+                backgroundImageName = "widePaperSource.jpg";
+            }
+            else
+            {
+                r0prime = new Vector2( 187, 318 );
+                r1prime = new Vector2( 553, 314 );
+                r2prime = new Vector2( 155, 838 );
+                r3prime = new Vector2( 584, 837 );
+                backgroundImageName = "tallPaperSource.jpg";
+            }
 
             float leftSideHeight = Vector2.Distance( r0prime, r2prime );
             float rightSideHeight = Vector2.Distance( r1prime, r3prime );
@@ -32,7 +54,7 @@ namespace AppraisalBot
                 r1prime = Vector2.Normalize(r1prime - r3prime) * scaledHeight * rightSideHeight / leftSideHeight + r3prime;
             }
 
-            Bitmap photoImage = Image.Load( "sourceArt/antiquesRoadshowSource.jpg" );
+            Bitmap photoImage = Image.Load( "sourceArt/" + backgroundImageName );
 
             return PerspectiveTransform( sourceArtImage, photoImage, r0prime, r1prime, r2prime, r3prime );
         }

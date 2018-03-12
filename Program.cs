@@ -501,7 +501,7 @@ namespace AppraisalBot
             bool isSign = SignDetection.IsSign( analysisResult );
             Console.WriteLine("Is Sign: " + isSign);
 
-            Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting );
+            Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting, isSign );
 
             //string comment = Comment.Get();
 
@@ -690,11 +690,11 @@ namespace AppraisalBot
             return color;
         }
 
-        static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier, bool isPainting)
+        static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier, bool isPainting, bool isSign)
         {
             Bitmap drawnBitmap = null;
             
-            if ( isPainting )
+            if ( isPainting || isSign )
             {
                 drawnBitmap = ImageTransforms.ComposeImageOntoPhoto( sourceImage );
             }
