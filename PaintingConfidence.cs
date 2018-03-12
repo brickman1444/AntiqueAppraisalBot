@@ -46,6 +46,8 @@ namespace AppraisalBot
                 "person",
                 "man",
                 "woman",
+                "girl",
+                "boy",
                 "mirror",
                 "people",
                 "group",
@@ -69,6 +71,7 @@ namespace AppraisalBot
                 "stone",
                 "wooden",
                 "sign",
+                "window",
             };
 
             foreach ( string tag in notPaintingTags )
