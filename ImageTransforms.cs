@@ -6,6 +6,7 @@ using SixLabors.ImageSharp;
 using SixLabors.Primitives;
 
 using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.Rgba32>;
+using PixelColor = SixLabors.ImageSharp.Rgba32;
 
 namespace AppraisalBot
 {
@@ -133,16 +134,58 @@ namespace AppraisalBot
 
                     sourcePoint /= sourcePoint.Z; // Normalize 2D homogenous coordinates
 
-                    if ( sourcePoint.X >= 0 && sourcePoint.Y >= 0
-                    && sourcePoint.X < sourceArtImage.Width && sourcePoint.Y < sourceArtImage.Height )
+                    if ( sourcePoint.X > -1 && sourcePoint.Y > -1
+                    && sourcePoint.X < sourceArtImage.Width + 1 && sourcePoint.Y < sourceArtImage.Height + 1 )
                     {
-                        // This is where you'd want to sample differently if you're into that
-                        destinationImage[ destinationX, destinationY ] = sourceArtImage[ (int)sourcePoint.X, (int)sourcePoint.Y ];
+                        destinationImage[ destinationX, destinationY ] = SampleImage( sourceArtImage, sourcePoint );
                     }
                 }
             }
 
             return destinationImage;
+        }
+
+        public static PixelColor SampleImage( Bitmap image, Vector4 point )
+        {
+            // Does a bilinear interpolation. Not as good as it could be but prevents
+            // major aliasing.
+
+            Vector2[] samplePoints = {
+                new Vector2( (float)Math.Floor( point.X ), (float)Math.Floor( point.Y ) ),
+                new Vector2( (float)Math.Ceiling( point.X ), (float)Math.Floor( point.Y ) ),
+                new Vector2( (float)Math.Floor( point.X ), (float)Math.Ceiling( point.Y ) ),
+                new Vector2( (float)Math.Ceiling( point.X ), (float)Math.Ceiling( point.Y ) ),
+                 };
+
+            Vector4[] sampleColors = new Vector4[4];
+
+            for ( int i = 0; i < samplePoints.Length; i++ )
+            {
+                Vector2 samplePoint = samplePoints[i];
+
+                // If the sample point is within bounds, sample it.
+                // Otherwise leave it at the default color value of 0,0,0,0
+                if ( samplePoint.X >= 0
+                    && samplePoint.X < image.Width
+                    && samplePoint.Y >= 0
+                    && samplePoint.Y < image.Height )
+                {
+                    sampleColors[i] = image[ (int)samplePoint.X, (int)samplePoint.Y ].ToVector4();
+                }
+            }
+
+            float xAmount = point.X - (float)Math.Floor( point.X );
+
+            Vector4 topColor = Vector4.Lerp( sampleColors[0], sampleColors[1], xAmount );
+            Vector4 bottomColor = Vector4.Lerp( sampleColors[2], sampleColors[3], xAmount );
+
+            float yAmount = point.Y - (float)Math.Floor( point.Y );
+
+            Vector4 finalValue = Vector4.Lerp( topColor, bottomColor, yAmount );
+
+            PixelColor outColor = new PixelColor( finalValue );
+
+            return outColor;
         }
     }
 
