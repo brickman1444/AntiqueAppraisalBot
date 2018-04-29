@@ -15,13 +15,19 @@ namespace AppraisalBot
         {
             bool isWide = sourceArtImage.Width > sourceArtImage.Height;
 
+            // These will be transformed corners of the image in the destination space.
             Vector2 r0prime = new Vector2();
             Vector2 r1prime = new Vector2();
             Vector2 r2prime = new Vector2();
             Vector2 r3prime = new Vector2();
             string backgroundImageName = "";
 
-            // find which image fits the source best
+            // Find which image fits the source best. The vector values are taken from
+            // where the reference object's corners in the source image are. After
+            // composing the image, the art image will cover up the reference object.
+            
+            // TODO: Turn this into a data file instead of code.
+            // TODO: Outside this function, decide whether it is a painting or paper and choose relevant background image.
 
             if ( isWide )
             {
@@ -50,6 +56,9 @@ namespace AppraisalBot
 
             if ( scaledHeight > leftSideHeight )
             {
+                // I know this math isn't right. It slightly distorts the output but it gets the job done and
+                // I can understand what it's doing.
+                // TODO: Reduce the usage of this code by adding more background images at different aspect ratios
                 r0prime = Vector2.Normalize(r0prime - r2prime) * scaledHeight + r2prime;
                 r1prime = Vector2.Normalize(r1prime - r3prime) * scaledHeight * rightSideHeight / leftSideHeight + r3prime;
             }
@@ -61,17 +70,22 @@ namespace AppraisalBot
 
         public static Bitmap PerspectiveTransform( Bitmap sourceArtImage, Bitmap destinationImage, Vector2 r0prime, Vector2 r1prime, Vector2 r2prime, Vector2 r3prime )
         {
-            // Order chosen arbitrarily
+            // Corner numbering chosen arbitrarily
             // 0    1
             //
             // 2    3
+            
+            // Locations of the art image corners in source space.
             Vector2 r0 = new Vector2( 0,                    0 );
             Vector2 r1 = new Vector2( sourceArtImage.Width, 0 );
             Vector2 r2 = new Vector2( 0,                    sourceArtImage.Height );
             Vector2 r3 = new Vector2( sourceArtImage.Width, sourceArtImage.Height );
 
-            // Reference for where these numbers come from:
+            // To transform the image into destination space, we will need a perspective
+            // matrix. We will solve a system of equations and then use the results from
+            // that to create the perspective matrix. Reference for this math is at:
             // http://www.vis.uky.edu/~ryang/Teaching/cs635-2016spring/Lectures/05-geo_trans_1.pdf
+
             double[,] systemOfEquations = {
                 {r0.X, r0.Y, 1.0, 0.0, 0.0, 0.0, -r0.X * r0prime.X, -r0.Y * r0prime.X},
                 {r1.X, r1.Y, 1.0, 0.0, 0.0, 0.0, -r1.X * r1prime.X, -r1.Y * r1prime.X},
@@ -97,35 +111,33 @@ namespace AppraisalBot
 
             double[] solveResults = StarMathLib.StarMath.solve( systemOfEquations, otherSideOfTheEqualsSign );
 
+            // Perspective matrix transforms a point from source space to destination space.
             Matrix4x4 perspectiveTransform = new Matrix4x4(
                 (float)solveResults[0], (float)solveResults[3], (float)solveResults[6], 0.0f,
                 (float)solveResults[1], (float)solveResults[4], (float)solveResults[7], 0.0f,
                 (float)solveResults[2], (float)solveResults[5], 1.0f,                   0.0f,
                 0.0f,                   0.0f,                   0.0f,                   1.0f);
 
+            // Inverted perspective matrix transforms a point from destination space to source space.
             Matrix4x4 invertedPerspectiveTransform = new Matrix4x4();
             Matrix4x4.Invert( perspectiveTransform, out invertedPerspectiveTransform );
 
-
-            foreach ( ImageFrame<Rgba32> sourceFrame in sourceArtImage.Frames )
+            // This could probably be optimized to only iterate through the pixels that matter.
+            for ( int destinationY = 0; destinationY < destinationImage.Height; destinationY++ )
             {
-                // This could probably be optimized to only iterate through the pixels that matter.
-                for ( int destinationY = 0; destinationY < destinationImage.Height; destinationY++ )
+                for ( int destinationX = 0; destinationX < destinationImage.Width; destinationX++ )
                 {
-                    for ( int destinationX = 0; destinationX < destinationImage.Width; destinationX++ )
+                    Vector4 destinationPoint = new Vector4( destinationX, destinationY, 1.0f, 0.0f );
+
+                    Vector4 sourcePoint = Vector4.Transform( destinationPoint, invertedPerspectiveTransform );
+
+                    sourcePoint /= sourcePoint.Z; // Normalize 2D homogenous coordinates
+
+                    if ( sourcePoint.X >= 0 && sourcePoint.Y >= 0
+                    && sourcePoint.X < sourceArtImage.Width && sourcePoint.Y < sourceArtImage.Height )
                     {
-                        Vector4 destinationPoint = new Vector4( destinationX, destinationY, 1.0f, 0.0f );
-
-                        Vector4 sourcePoint = Vector4.Transform( destinationPoint, invertedPerspectiveTransform );
-
-                        sourcePoint /= sourcePoint.Z; // Normalize 2D homogenous coordinates
-
-                        if ( sourcePoint.X >= 0 && sourcePoint.Y >= 0
-                        && sourcePoint.X < sourceArtImage.Width && sourcePoint.Y < sourceArtImage.Height )
-                        {
-                            // This is where you'd want to sample differently if you're into that
-                            destinationImage[ destinationX, destinationY ] = sourceArtImage[ (int)sourcePoint.X, (int)sourcePoint.Y ];
-                        }
+                        // This is where you'd want to sample differently if you're into that
+                        destinationImage[ destinationX, destinationY ] = sourceArtImage[ (int)sourcePoint.X, (int)sourcePoint.Y ];
                     }
                 }
             }
