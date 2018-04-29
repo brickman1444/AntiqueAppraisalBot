@@ -301,20 +301,15 @@ namespace AppraisalBot
 
             HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
 
-            string responseText = "";
             using ( HttpWebResponse response = (HttpWebResponse)myReq.GetResponseAsync().GetAwaiter().GetResult() )
             {
-                using ( Stream receiveStream = response.GetResponseStream() )
+                using ( StreamReader readStream = new StreamReader( response.GetResponseStream(), encode ) )
                 {
-                    // Pipes the stream to a higher level stream reader with the required encoding format. 
-                    StreamReader readStream = new StreamReader(receiveStream, encode);
-                    responseText = readStream.ReadToEnd();;
+                    string responseText = readStream.ReadToEnd();
+                    MetResponse responseObject = JsonConvert.DeserializeObject<MetResponse>(responseText);
+                    return responseObject;
                 }
-
             }
-
-            MetResponse responseObject = JsonConvert.DeserializeObject<MetResponse>(responseText);
-            return responseObject;
         }
 
         static Bitmap DownloadImage(string url)
