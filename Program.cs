@@ -61,6 +61,7 @@ namespace AppraisalBot
         public int lowPrice;
         public int highPrice;
 
+        // TODO: Cover this with unit tests
         public void RoundPrices()
         {
             // Get the order of magnitude of the higher price. We'll 
@@ -260,7 +261,7 @@ namespace AppraisalBot
                         }
                     }
 
-                    //TweetAppraisal( appraisal );
+                    TweetAppraisal( appraisal );
                 }
 
                 objectCounter++;
@@ -310,7 +311,6 @@ namespace AppraisalBot
                 "Timepieces",
                 "Arms",
                 "Costume",
-                "Flatware",
             };
 
             Random rnd = new Random();
@@ -329,8 +329,7 @@ namespace AppraisalBot
                 throw new Exception("Not enough items meet search criteria. Requested: " + numItems + " Found: " + response.total);
             }
 
-            // TODO: Randomize this set before taking the subset
-            return response.objectIDs.Take(numItems);
+            return RandomSubset( response.objectIDs, numItems);
         }
 
         static T GetWebResponse<T>(string url)
@@ -798,6 +797,18 @@ namespace AppraisalBot
                     Medias = new List<Tweetinvi.Models.IMedia> { media }
                 });
             }
+        }
+
+        static IEnumerable<T> RandomSubset<T>(IEnumerable<T> originalList, int numberOfItemsToTake)
+        {
+            Random rnd = new Random();
+
+            if (numberOfItemsToTake > originalList.Count())
+            {
+                throw new Exception("Not enough items to take subset. Requested: " + numberOfItemsToTake + " Have: " + originalList.Count());
+            }
+
+            return originalList.OrderBy( x => rnd.NextDouble()).Take(numberOfItemsToTake);
         }
     }
 }
