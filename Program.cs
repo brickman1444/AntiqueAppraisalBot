@@ -2,7 +2,6 @@
 using System.Net;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,7 +11,6 @@ using Microsoft.ProjectOxford.Vision;
 using Microsoft.ProjectOxford.Vision.Contract;
 
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
 using SixLabors.Fonts;
 using SixLabors.Primitives;
 
@@ -20,32 +18,22 @@ using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.Rgba32>;
 
 namespace AppraisalBot
 {
-    public class MetResponse
+    public class MetSearchResponse
     {
-        public class MetResult
-        {
-            public string title;
-            public string description;
-            public string teaserText;
-            public string url;
-            public string image;
-            public string regularImage;
-            public string largeImage;
-            public string date;
-            public string medium;
-            public string accessionNumber;
-            public string galleryInformation;
-        }
+        public int total;
+        public int[] objectIDs;
+    }
 
-        public Object request;
-        public List<MetResult> results;
-        public List<Object> facets;
-        public int totalResults;
-        public int totalCollectionResults;
-        public bool fromCache;
-        public bool isCorrected;
-        public string originalQuery;
-        public string correctedQuery;
+    public class MetObjectResponse
+    {
+        public int objectID;
+        public bool isPublicDomain;
+        public string primaryImage;
+        public string primaryImageSmall;
+        public string[] additionalImages;
+        public string title;
+        public string rightsAndReproduction;
+        public string linkResource;
     }
 
     public class CelebrityAnalysisResult
@@ -198,35 +186,29 @@ namespace AppraisalBot
 
             Console.WriteLine("Getting collection listing");
 
-            MetResponse responseObject = GetCollectionListing( numItems );
+            IEnumerable<MetObjectResponse> responseObjects = GetCollectionListing( numItems );
 
-            Console.WriteLine( "Found " + responseObject.results.Count + " results" );
+            Console.WriteLine( "Found " + responseObjects.Count() + " results" );
 
-            for ( int i = 0; i < responseObject.results.Count; i++ )
+            int objectCounter = 0;
+            foreach ( MetObjectResponse responseObject in responseObjects )
             {
                 Console.WriteLine("-----------------------------------------------------------------------");
 
-                //Console.WriteLine("small url: " + responseObject.results[i].image);
-                //Console.WriteLine("large url: " + responseObject.results[i].largeImage );
-
-                string smallImageUrl = responseObject.results[i].image;
-                int index = smallImageUrl.LastIndexOf( responseObject.results[i].largeImage.Substring(0,3) );
-                string largeImageUrl = smallImageUrl.Substring(0,index) + responseObject.results[i].largeImage;
-                Console.WriteLine("large url: " + largeImageUrl);
+                string imageUrl = responseObject.primaryImageSmall;
+                Console.WriteLine("image url: " + imageUrl);
                 
-                string fullListingURL = "https://www.metmuseum.org" + responseObject.results[i].url;
-                int questionMarkIndex = fullListingURL.LastIndexOf('?');
-                string shortenedURL = fullListingURL.Substring(0,questionMarkIndex);
-                Console.WriteLine("Listing page: " + shortenedURL);
+                string fullListingURL = responseObject.linkResource;
+                Console.WriteLine("Listing page: " + fullListingURL);
 
-                Bitmap image = DownloadImage( largeImageUrl );
+                Bitmap image = DownloadImage( imageUrl );
 
                 bool doAnalysis = true;
                 if (image != null && doAnalysis)
                 {
                     if ( Directory.Exists("images"))
                     {
-                        string destinationFilePath = @"images/sourceImage" + i + ".jpg";
+                        string destinationFilePath = @"images/sourceImage" + objectCounter + ".jpg";
                         image.Save( destinationFilePath );
                     }
 
@@ -269,28 +251,50 @@ namespace AppraisalBot
 
                     if ( Directory.Exists("images"))
                     {
-                        string destinationFilePath = @"images/finalImage" + i + ".jpg";
+                        string destinationFilePath = @"images/finalImage" + objectCounter + ".jpg";
                         appraisal.image.Save( destinationFilePath );
 
-                        using (StreamWriter file = File.CreateText(@"images/comment" + i + ".txt") )
+                        using (StreamWriter file = File.CreateText(@"images/comment" + objectCounter + ".txt") )
                         {
                             file.WriteLine(appraisal.comment);
                         }
                     }
 
-                    TweetAppraisal( appraisal );
+                    //TweetAppraisal( appraisal );
                 }
+
+                objectCounter++;
             }
 
             Console.WriteLine("Done");
         }
 
-        static string GetMetAPIUrl( int offset, int numItems, string material)
+        static string GetMetSearchAPIUrl(string material)
         {
-            return "http://metmuseum.org/api/collection/collectionlisting?offset=" + offset + "&pageSize=0&perPage=" + numItems + "&sortBy=Relevance&sortOrder=asc&material=" + material + "&showOnly=openaccess";
+            return "https://collectionapi.metmuseum.org/public/collection/v1/search"
+            + "?medium=" + material
+            + "&q=" + material // The endpoint doesn't return anything if q is not supplied.
+            + "&hasImages=true";
         }
 
-        static MetResponse GetCollectionListing(int numItems)
+        static string GetMetObjectAPIUrl(int objectID)
+        {
+            return "https://collectionapi.metmuseum.org/public/collection/v1/objects/" + objectID;
+        }
+
+        static IEnumerable<MetObjectResponse> GetCollectionListing(int numItems)
+        {
+            IEnumerable<int> randomSetOfObjectIDs = GetRandomObjectIDs(numItems);
+
+            return randomSetOfObjectIDs.Select(objectID => GetObjectResponse(objectID));
+        }
+
+        static MetObjectResponse GetObjectResponse(int objectID)
+        {
+            return GetWebResponse<MetObjectResponse>(GetMetObjectAPIUrl(objectID));
+        }
+
+        static IEnumerable<int> GetRandomObjectIDs(int numItems)
         {
             string[] materials = {
                 "Bags",
@@ -312,43 +316,34 @@ namespace AppraisalBot
             Random rnd = new Random();
             string material = materials[ rnd.Next(0, materials.Length)];
 
-            Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
+            string searchURL = GetMetSearchAPIUrl( material );
 
-            // First get the size of the results so we can randomly pick an offset within that.
-            int numItemsInCategory = 0;
+            MetSearchResponse response = GetWebResponse<MetSearchResponse>(searchURL);
 
-            string categorySizeUrl = GetMetAPIUrl( 0, 1, material );
+            Console.WriteLine("Total items in category: " + response.total);
 
-            HttpWebRequest categorySizeRequest = (HttpWebRequest)WebRequest.Create(categorySizeUrl);
+            Console.WriteLine("Material: " + material + " numItems: " + numItems);
 
-            using ( HttpWebResponse categorySizeResponse = (HttpWebResponse)categorySizeRequest.GetResponseAsync().GetAwaiter().GetResult() )
+            if (numItems > response.total)
             {
-                using ( StreamReader readStream = new StreamReader( categorySizeResponse.GetResponseStream(), encode) )
-                {
-                    string categoryResponseText = readStream.ReadToEnd();
-
-                    MetResponse categoryResponseObject = JsonConvert.DeserializeObject<MetResponse>(categoryResponseText);
-                    numItemsInCategory = categoryResponseObject.totalResults;
-                }
+                throw new Exception("Not enough items meet search criteria. Requested: " + numItems + " Found: " + response.total);
             }
 
-            Console.WriteLine("Total items in category: " + numItemsInCategory);
+            // TODO: Randomize this set before taking the subset
+            return response.objectIDs.Take(numItems);
+        }
 
-            int offset = rnd.Next(0, numItemsInCategory - numItems);
+        static T GetWebResponse<T>(string url)
+        {
+            Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
 
-            Console.WriteLine("Material: " + material + " offset: " + offset + " numItems: " + numItems);
-
-            string url = GetMetAPIUrl( offset, numItems, material);
-
-            HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
-
-            using ( HttpWebResponse response = (HttpWebResponse)myReq.GetResponseAsync().GetAwaiter().GetResult() )
+            using ( HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().GetAwaiter().GetResult() )
             {
-                using ( StreamReader readStream = new StreamReader( response.GetResponseStream(), encode ) )
+                using ( StreamReader readStream = new StreamReader( response.GetResponseStream(), encode) )
                 {
                     string responseText = readStream.ReadToEnd();
-                    MetResponse responseObject = JsonConvert.DeserializeObject<MetResponse>(responseText);
-                    return responseObject;
+                    return JsonConvert.DeserializeObject<T>(responseText);
                 }
             }
         }
