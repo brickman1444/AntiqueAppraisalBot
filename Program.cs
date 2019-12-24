@@ -33,7 +33,7 @@ namespace AppraisalBot
         public string[] additionalImages;
         public string title;
         public string rightsAndReproduction;
-        public string linkResource;
+        public string objectURL;
     }
 
     public class CelebrityAnalysisResult
@@ -198,7 +198,7 @@ namespace AppraisalBot
                 string imageUrl = responseObject.primaryImageSmall;
                 Console.WriteLine("image url: " + imageUrl);
                 
-                string fullListingURL = responseObject.linkResource;
+                string fullListingURL = responseObject.objectURL;
                 Console.WriteLine("Listing page: " + fullListingURL);
 
                 Bitmap image = DownloadImage( imageUrl );
