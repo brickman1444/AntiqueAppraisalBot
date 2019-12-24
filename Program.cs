@@ -789,13 +789,14 @@ namespace AppraisalBot
                 byte[] bytes = memoryStream.ToArray();
 
                 Console.WriteLine("Uploading image to twitter");
-                var media = Tweetinvi.Upload.UploadImage(bytes);
+                Tweetinvi.Models.IMedia media = Tweetinvi.Upload.UploadImage(bytes);
 
                 Console.WriteLine("Publishing tweet");
-                var tweet = Tweetinvi.Tweet.PublishTweet(appraisal.comment, new Tweetinvi.Parameters.PublishTweetOptionalParameters
+                Tweetinvi.Models.ITweet tweet = Tweetinvi.Tweet.PublishTweet(appraisal.comment, new Tweetinvi.Parameters.PublishTweetOptionalParameters
                 {
                     Medias = new List<Tweetinvi.Models.IMedia> { media }
                 });
+                Console.WriteLine("Tweet published to: " + tweet.Url);
             }
         }
 
