@@ -301,20 +301,22 @@ namespace AppraisalBot
 
         static IEnumerable<int> GetRandomObjectIDs(int numItems)
         {
+            // total objects: 471,061
             string[] materials = {
-                "Bags",
-                "Jewelry",
-                "Sculpture",
-                "Bowls",
-                "Furniture",
-                "Musical%20instruments",
-                "Vessels",
-                "Ceramics",
-                "Wood",
-                "Paintings",
-                "Timepieces",
-                "Arms",
-                "Costume",
+                "Bags", // 3
+                "Jewelry", // 17
+                "Sculpture", // 232
+                "Bowls", // 19
+                "Furniture", // 66
+                "Musical%20instruments", // 6
+                "Vessels", // 41
+                "Ceramics", // 66
+                "Wood", // 110
+                "Paintings", // 491
+                "Timepieces", // 2
+                "Arms", // 7
+                "Costume", // 42
+                "Cases", // 10
             };
 
             Random rnd = new Random();
