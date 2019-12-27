@@ -92,12 +92,15 @@ namespace AppraisalBot
                 "in front of a mirror",
                 "a group of people",
             };
-
-            foreach ( string description in paintingDescriptions )
+            
+            if ( analysisResult.generalAnalysisResult.Description.Captions.Count() != 0 )
             {
-                if ( analysisResult.generalAnalysisResult.Description.Captions[0].Text.Contains( description ) )
+                foreach ( string description in paintingDescriptions )
                 {
-                    cumulativeConfidence += 0.4f;
+                    if ( analysisResult.generalAnalysisResult.Description.Captions[0].Text.Contains( description ) )
+                    {
+                        cumulativeConfidence += 0.4f;
+                    }
                 }
             }
 
