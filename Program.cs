@@ -181,7 +181,11 @@ namespace AppraisalBot
                 }
             }
 
-            Tweetinvi.Auth.SetUserCredentials(consumerKey, consumerSecret, accessToken, accessTokenSecret);
+            Tweetinvi.Models.ITwitterCredentials credentials = Tweetinvi.Auth.SetUserCredentials(consumerKey, consumerSecret, accessToken, accessTokenSecret);
+            if ( credentials is null )
+            {
+                Console.WriteLine("Twitter credentials not set.");
+            }
 
             int numItems = 1;
 
