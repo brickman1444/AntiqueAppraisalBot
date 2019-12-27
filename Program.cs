@@ -793,7 +793,7 @@ namespace AppraisalBot
                 byte[] bytes = memoryStream.ToArray();
 
                 Console.WriteLine("Uploading image to twitter");
-                Tweetinvi.Models.IMedia media = Tweetinvi.Upload.UploadImage(bytes);
+                Tweetinvi.Models.IMedia media = Tweetinvi.Upload.UploadBinary( new Tweetinvi.Parameters.UploadParameters { Binary = bytes });
 
                 Console.WriteLine("Publishing tweet");
                 Tweetinvi.Models.ITweet tweet = Tweetinvi.Tweet.PublishTweet(appraisal.comment, new Tweetinvi.Parameters.PublishTweetOptionalParameters

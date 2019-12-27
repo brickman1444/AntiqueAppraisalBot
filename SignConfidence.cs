@@ -38,11 +38,14 @@ namespace AppraisalBot
                 "piece of paper",
             };
 
-            foreach ( string description in signDescriptions )
+            if ( analysisResult.generalAnalysisResult.Description.Captions.Count() != 0 )
             {
-                if ( analysisResult.generalAnalysisResult.Description.Captions[0].Text.Contains( description ) )
+                foreach ( string description in signDescriptions )
                 {
-                    cumulativeConfidence += 0.5f;
+                    if ( analysisResult.generalAnalysisResult.Description.Captions[0].Text.Contains( description ) )
+                    {
+                        cumulativeConfidence += 0.5f;
+                    }
                 }
             }
 
