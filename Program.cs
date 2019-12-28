@@ -67,42 +67,42 @@ namespace AppraisalBot
         public void RoundPrices()
         {
             // Get the order of magnitude of the higher price. We'll 
-            int highPriceOrder = (int)Math.Floor( Math.Log10( highPrice ) );
+            int highPriceOrder = (int)Math.Floor(Math.Log10(highPrice));
 
             highPriceOrder -= 1; // subtract 1 to keep two meaningful digits on at least the high price
 
-            if ( highPriceOrder <= 0 )
+            if (highPriceOrder <= 0)
             {
                 // If the prices are two small, exit early
                 return;
             }
 
-            int highPriceScale = (int)Math.Pow( 10, highPriceOrder );
+            int highPriceScale = (int)Math.Pow(10, highPriceOrder);
 
             // Use integer division to truncate off the end
-            highPrice = ( highPrice / highPriceScale ) * highPriceScale;
+            highPrice = (highPrice / highPriceScale) * highPriceScale;
 
-            if ( lowPrice / highPriceScale > 0 )
+            if (lowPrice / highPriceScale > 0)
             {
                 // If the prices are generally close we can use the high price's
                 // scale to round the low price. This is usually nice to read
-                lowPrice = ( lowPrice / highPriceScale ) * highPriceScale;
+                lowPrice = (lowPrice / highPriceScale) * highPriceScale;
             }
             else
             {
                 // If the prices are too different, round the low price on its own
-                int lowPriceOrder = (int)Math.Floor( Math.Log10( lowPrice ) );
+                int lowPriceOrder = (int)Math.Floor(Math.Log10(lowPrice));
 
                 // Don't subtract anything from the low price order. The prices
                 // are different enough that we only want one meaningful digit. 
 
-                if ( lowPriceOrder > 0 )
+                if (lowPriceOrder > 0)
                 {
-                    int lowPriceScale = (int)Math.Pow( 10, lowPriceOrder );
-                    lowPrice = ( lowPrice / lowPriceScale ) * lowPriceScale;
+                    int lowPriceScale = (int)Math.Pow(10, lowPriceOrder);
+                    lowPrice = (lowPrice / lowPriceScale) * lowPriceScale;
                 }
             }
-            
+
         }
     }
 
@@ -111,7 +111,7 @@ namespace AppraisalBot
         public Bitmap image;
         public string comment;
 
-        public Appraisal( Bitmap inImage, string inComment)
+        public Appraisal(Bitmap inImage, string inComment)
         {
             image = inImage;
             comment = inComment;
@@ -128,12 +128,12 @@ namespace AppraisalBot
     {
         static string computerVisionKey = "";
         public Stream awsLambdaHandler(Stream inputStream)
-       {
-           //Main(new string[0]);
-           Console.WriteLine("starting via lambda");
-           Main( new string[0]);
-           return inputStream;
-       }
+        {
+            //Main(new string[0]);
+            Console.WriteLine("starting via lambda");
+            Main(new string[0]);
+            return inputStream;
+        }
         public static void Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -141,7 +141,7 @@ namespace AppraisalBot
             Console.WriteLine("Beginning program");
 
             // Delete the previous output
-            if ( Directory.Exists("images") )
+            if (Directory.Exists("images"))
             {
                 string[] filePaths = Directory.GetFiles(@"images\");
                 foreach (string filePath in filePaths)
@@ -150,31 +150,31 @@ namespace AppraisalBot
                     {
                         File.Delete(filePath);
                     }
-                    catch ( System.IO.IOException e )
+                    catch (System.IO.IOException e)
                     {
-                        Console.WriteLine( e.ToString() );
+                        Console.WriteLine(e.ToString());
                     }
                 }
             }
 
-            computerVisionKey = System.Environment.GetEnvironmentVariable ("computerVisionKey");
+            computerVisionKey = System.Environment.GetEnvironmentVariable("computerVisionKey");
 
             if (computerVisionKey == null)
             {
-                using ( StreamReader fs = File.OpenText( "localconfig/computervisionkey.txt" ) )
+                using (StreamReader fs = File.OpenText("localconfig/computervisionkey.txt"))
                 {
                     computerVisionKey = fs.ReadToEnd();
                 }
             }
 
-            string consumerKey = System.Environment.GetEnvironmentVariable ("twitterConsumerKey");
-            string consumerSecret = System.Environment.GetEnvironmentVariable ("twitterConsumerSecret");
-            string accessToken = System.Environment.GetEnvironmentVariable ("twitterAccessToken");
-            string accessTokenSecret = System.Environment.GetEnvironmentVariable ("twitterAccessTokenSecret");
+            string consumerKey = System.Environment.GetEnvironmentVariable("twitterConsumerKey");
+            string consumerSecret = System.Environment.GetEnvironmentVariable("twitterConsumerSecret");
+            string accessToken = System.Environment.GetEnvironmentVariable("twitterAccessToken");
+            string accessTokenSecret = System.Environment.GetEnvironmentVariable("twitterAccessTokenSecret");
 
             if (consumerKey == null)
             {
-                using ( StreamReader fs = File.OpenText( "localconfig/twitterKeys.txt" ) )
+                using (StreamReader fs = File.OpenText("localconfig/twitterKeys.txt"))
                 {
                     consumerKey = fs.ReadLine();
                     consumerSecret = fs.ReadLine();
@@ -184,7 +184,7 @@ namespace AppraisalBot
             }
 
             Tweetinvi.Models.ITwitterCredentials credentials = Tweetinvi.Auth.SetUserCredentials(consumerKey, consumerSecret, accessToken, accessTokenSecret);
-            if ( credentials is null )
+            if (credentials is null)
             {
                 Console.WriteLine("Twitter credentials not set.");
             }
@@ -193,75 +193,75 @@ namespace AppraisalBot
 
             Console.WriteLine("Getting collection listing");
 
-            IEnumerable<MetObjectResponse> responseObjects = GetCollectionListing( numItems );
+            IEnumerable<MetObjectResponse> responseObjects = GetCollectionListing(numItems);
 
-            Console.WriteLine( "Found " + responseObjects.Count() + " results" );
+            Console.WriteLine("Found " + responseObjects.Count() + " results");
 
             int objectCounter = 0;
-            foreach ( MetObjectResponse responseObject in responseObjects )
+            foreach (MetObjectResponse responseObject in responseObjects)
             {
                 Console.WriteLine("-----------------------------------------------------------------------");
 
                 string imageUrl = responseObject.primaryImageSmall;
                 Console.WriteLine("image url: " + imageUrl);
-                
+
                 string fullListingURL = responseObject.objectURL;
                 Console.WriteLine("Listing page: " + fullListingURL);
 
-                Bitmap image = DownloadImage( imageUrl );
+                Bitmap image = DownloadImage(imageUrl);
 
                 bool doAnalysis = true;
                 if (image != null && doAnalysis)
                 {
-                    if ( Directory.Exists("images"))
+                    if (Directory.Exists("images"))
                     {
                         string destinationFilePath = @"images/sourceImage" + objectCounter + ".jpg";
-                        image.Save( destinationFilePath );
+                        image.Save(destinationFilePath);
                     }
 
                     AnalysisBlob analysisBlob = new AnalysisBlob();
-                    analysisBlob.generalAnalysisResult = AnalyzeImage( image );
-                    analysisBlob.celebrityAnalysisResult = AnalyzeImageForCelebrities( image );
+                    analysisBlob.generalAnalysisResult = AnalyzeImage(image);
+                    analysisBlob.celebrityAnalysisResult = AnalyzeImageForCelebrities(image);
 
                     string tagString = "";
-                    foreach ( string tag in analysisBlob.generalAnalysisResult.Description.Tags )
+                    foreach (string tag in analysisBlob.generalAnalysisResult.Description.Tags)
                     {
                         tagString += tag + ", ";
                     }
-                    Console.WriteLine( "Tags: " + tagString );
+                    Console.WriteLine("Tags: " + tagString);
 
-                    string accentColor = ColorTable.GetClosestColorName( ColorTable.GetColorFromHexString( analysisBlob.generalAnalysisResult.Color.AccentColor ) );
+                    string accentColor = ColorTable.GetClosestColorName(ColorTable.GetColorFromHexString(analysisBlob.generalAnalysisResult.Color.AccentColor));
 
-                    Console.WriteLine("Foreground: " + analysisBlob.generalAnalysisResult.Color.DominantColorForeground + " Background: " + analysisBlob.generalAnalysisResult.Color.DominantColorBackground + " Accent: " + accentColor );
+                    Console.WriteLine("Foreground: " + analysisBlob.generalAnalysisResult.Color.DominantColorForeground + " Background: " + analysisBlob.generalAnalysisResult.Color.DominantColorBackground + " Accent: " + accentColor);
 
-                    if ( analysisBlob.generalAnalysisResult.Categories != null )
+                    if (analysisBlob.generalAnalysisResult.Categories != null)
                     {
                         string categoryString = "";
-                        foreach ( Category category in analysisBlob.generalAnalysisResult.Categories )
+                        foreach (Category category in analysisBlob.generalAnalysisResult.Categories)
                         {
                             categoryString += category.Name + ", ";
                         }
                         Console.WriteLine("Categories: " + categoryString);
                     }
 
-                    if ( HasCelebrities( analysisBlob.celebrityAnalysisResult ) )
+                    if (HasCelebrities(analysisBlob.celebrityAnalysisResult))
                     {
                         string celebrityString = "";
-                        foreach ( CelebrityAnalysisResult.Celebrity celebrity in analysisBlob.celebrityAnalysisResult.celebrities )
+                        foreach (CelebrityAnalysisResult.Celebrity celebrity in analysisBlob.celebrityAnalysisResult.celebrities)
                         {
                             celebrityString += celebrity.name + ", ";
                         }
                         Console.WriteLine("Celebrities: " + celebrityString);
                     }
 
-                    Appraisal appraisal = CreateAppraisal( image, analysisBlob );
+                    Appraisal appraisal = CreateAppraisal(image, analysisBlob);
 
-                    if ( Directory.Exists("images"))
+                    if (Directory.Exists("images"))
                     {
                         string destinationFilePath = @"images/finalImage" + objectCounter + ".jpg";
-                        appraisal.image.Save( destinationFilePath );
+                        appraisal.image.Save(destinationFilePath);
 
-                        using (StreamWriter file = File.CreateText(@"images/comment" + objectCounter + ".txt") )
+                        using (StreamWriter file = File.CreateText(@"images/comment" + objectCounter + ".txt"))
                         {
                             file.WriteLine(appraisal.comment);
                         }
@@ -311,23 +311,23 @@ namespace AppraisalBot
             // For scale, there are around 470,000 total objects.
             materialSelector.TryAddItem("Bags", "Bags", 3);
             materialSelector.TryAddItem("Jewelry", "Jewelry", 17);
-            materialSelector.TryAddItem("Sculpture", "Sculpture",232);
+            materialSelector.TryAddItem("Sculpture", "Sculpture", 232);
             materialSelector.TryAddItem("Bowls", "Bowls", 19);
             materialSelector.TryAddItem("Furniture", "Furniture", 66);
             materialSelector.TryAddItem("Musical%20instruments", "Musical%20instruments", 6);
             materialSelector.TryAddItem("Vessels", "Vessels", 41);
             materialSelector.TryAddItem("Ceramics", "Ceramics", 66);
             materialSelector.TryAddItem("Wood", "Wood", 110);
-            materialSelector.TryAddItem("Paintings", "Paintings",491);
+            materialSelector.TryAddItem("Paintings", "Paintings", 491);
             materialSelector.TryAddItem("Timepieces", "Timepieces", 2);
-            materialSelector.TryAddItem("Arms", "Arms",7);
+            materialSelector.TryAddItem("Arms", "Arms", 7);
             materialSelector.TryAddItem("Costume", "Costume", 42);
             materialSelector.TryAddItem("Cases", "Cases", 10);
             materialSelector.TryAddItem("Metal", "Metal", 384);
 
             string material = materialSelector.RandomSelect(1).First().Value;
 
-            string searchURL = GetMetSearchAPIUrl( material );
+            string searchURL = GetMetSearchAPIUrl(material);
 
             MetSearchResponse response = GetWebResponse<MetSearchResponse>(searchURL);
 
@@ -340,7 +340,7 @@ namespace AppraisalBot
                 throw new Exception("Not enough items meet search criteria. Requested: " + numItems + " Found: " + response.total);
             }
 
-            return RandomSubset( response.objectIDs, numItems);
+            return RandomSubset(response.objectIDs, numItems);
         }
 
         static T GetWebResponse<T>(string url)
@@ -348,9 +348,9 @@ namespace AppraisalBot
             Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
 
-            using ( HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().GetAwaiter().GetResult() )
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().GetAwaiter().GetResult())
             {
-                using ( StreamReader readStream = new StreamReader( response.GetResponseStream(), encode) )
+                using (StreamReader readStream = new StreamReader(response.GetResponseStream(), encode))
                 {
                     string responseText = readStream.ReadToEnd();
                     return JsonConvert.DeserializeObject<T>(responseText);
@@ -360,14 +360,15 @@ namespace AppraisalBot
 
         static Bitmap DownloadImage(string url)
         {
-            try 
+            try
             {
                 HttpWebRequest lxRequest = (HttpWebRequest)WebRequest.Create(url);
 
                 // returned values are returned as a stream, then read into a string
-                using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponseAsync().GetAwaiter().GetResult()){
-                    
-                    Bitmap image = Image.Load<PixelColor>( lxResponse.GetResponseStream() );
+                using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponseAsync().GetAwaiter().GetResult())
+                {
+
+                    Bitmap image = Image.Load<PixelColor>(lxResponse.GetResponseStream());
 
                     if (image.Width >= 250)
                     {
@@ -396,14 +397,14 @@ namespace AppraisalBot
                 memoryStream.Position = 0;
 
                 Console.WriteLine("Calling VisionServiceClient.AnalyzeImageAsync()...");
-                VisualFeature[] visualFeatures = new VisualFeature[] { 
+                VisualFeature[] visualFeatures = new VisualFeature[] {
                     VisualFeature.Adult,
                     VisualFeature.Color,
                     VisualFeature.Description,
                     VisualFeature.ImageType
                 };
 
-                AnalysisResult analysisResult = VisionServiceClient.AnalyzeImageAsync( memoryStream, visualFeatures).GetAwaiter().GetResult();
+                AnalysisResult analysisResult = VisionServiceClient.AnalyzeImageAsync(memoryStream, visualFeatures).GetAwaiter().GetResult();
                 return analysisResult;
             }
         }
@@ -421,12 +422,12 @@ namespace AppraisalBot
                 int height = (int)(sourceImage.Width / 16.0f * 9.0f * 1.2f); // Set it to a 16:9 with an extra 20% to increase the overall size
                 Console.WriteLine("Original Width: " + sourceImage.Width + " Original Height: " + sourceImage.Height + " Cropped Height: " + height);
 
-                if ( sourceImage.Height > height )
+                if (sourceImage.Height > height)
                 {
                     Console.WriteLine("Calling VisionServiceClient.GetThumbnailAsync()...");
-                    byte[] bytes = VisionServiceClient.GetThumbnailAsync( memoryStream, width, height ).GetAwaiter().GetResult();
+                    byte[] bytes = VisionServiceClient.GetThumbnailAsync(memoryStream, width, height).GetAwaiter().GetResult();
 
-                    Bitmap croppedImage = Image.Load( bytes );
+                    Bitmap croppedImage = Image.Load(bytes);
 
                     return croppedImage;
                 }
@@ -450,7 +451,7 @@ namespace AppraisalBot
                 Console.WriteLine("Calling VisionServiceClient.AnalyzeImageInDomainAsync()...");
 
                 // This is how you'd recognize celebrities like Henry Clay
-                Microsoft.ProjectOxford.Vision.Contract.AnalysisInDomainResult result = VisionServiceClient.AnalyzeImageInDomainAsync( memoryStream, "celebrities" ).GetAwaiter().GetResult();
+                Microsoft.ProjectOxford.Vision.Contract.AnalysisInDomainResult result = VisionServiceClient.AnalyzeImageInDomainAsync(memoryStream, "celebrities").GetAwaiter().GetResult();
 
                 Newtonsoft.Json.Linq.JObject jsonObj = result.Result as Newtonsoft.Json.Linq.JObject;
 
@@ -466,14 +467,14 @@ namespace AppraisalBot
             priceRange.highPrice = 0;
 
             // Longer captions means higher prices
-            foreach ( char c in caption )
+            foreach (char c in caption)
             {
                 priceRange.highPrice += c;
             }
 
             // Randomly increase price
             Random rnd = new Random();
-            priceRange.highPrice *= (int)( 1.0f + rnd.NextDouble() * 3.0 );
+            priceRange.highPrice *= (int)(1.0f + rnd.NextDouble() * 3.0);
 
             priceRange.highPrice = (int)(priceRange.highPrice * expensiveMultiplier);
 
@@ -486,80 +487,80 @@ namespace AppraisalBot
             return priceRange;
         }
 
-        static int GetYear( Bitmap image, bool isOld, bool isBlackAndWhitePhoto )
+        static int GetYear(Bitmap image, bool isOld, bool isBlackAndWhitePhoto)
         {
             int maxYear = 1917;
             int minYear = 500;
 
-            if ( isOld && isBlackAndWhitePhoto )
+            if (isOld && isBlackAndWhitePhoto)
             {
                 maxYear = 1900;
                 minYear = 1830;
             }
-            else if ( isBlackAndWhitePhoto )
+            else if (isBlackAndWhitePhoto)
             {
                 // Estimate of the timeline of black and white photos
                 maxYear = 1930;
                 minYear = 1830;
             }
-            else if ( isOld )
+            else if (isOld)
             {
                 // Make a guess that old stuff isn't modern but also isn't ancient
                 maxYear = 1900;
                 minYear = 1000;
             }
 
-            PixelColor pixelSampleColor = image[ image.Width / 3, image.Height / 3 ];
+            PixelColor pixelSampleColor = image[image.Width / 3, image.Height / 3];
 
             float red = (float)pixelSampleColor.R / 255.0f;
             float green = (float)pixelSampleColor.G / 255.0f;
             float blue = (float)pixelSampleColor.B / 255.0f;
-            
+
             float scale = (red + green + blue) / 3.0f;
 
             int year = (int)(minYear + (maxYear - minYear) * scale);
             return year;
         }
 
-        static Appraisal CreateAppraisal( Bitmap sourceImage, AnalysisBlob analysisResult )
+        static Appraisal CreateAppraisal(Bitmap sourceImage, AnalysisBlob analysisResult)
         {
-            Caption caption = GetCaption( analysisResult.generalAnalysisResult );
-            Console.WriteLine( "Caption: " + caption.Text + " " + caption.Confidence );
+            Caption caption = GetCaption(analysisResult.generalAnalysisResult);
+            Console.WriteLine("Caption: " + caption.Text + " " + caption.Confidence);
 
-            string foregroundColor = GetForegroundColor( analysisResult.generalAnalysisResult );
+            string foregroundColor = GetForegroundColor(analysisResult.generalAnalysisResult);
             float confidence = (float)caption.Confidence;
-            bool isOld = IsOld( analysisResult.generalAnalysisResult );
-            float expensiveMultiplier = GetPriceExpensiveMultiplier( analysisResult.generalAnalysisResult );
-            Console.WriteLine( "Is Old: " + isOld );
-            bool isBlackAndWhite = IsBlackAndWhite( analysisResult.generalAnalysisResult );
-            Console.WriteLine("Is Black and White: " + isBlackAndWhite );
-            string descriptionText = GetDescription( caption, foregroundColor, isOld, isBlackAndWhite );
+            bool isOld = IsOld(analysisResult.generalAnalysisResult);
+            float expensiveMultiplier = GetPriceExpensiveMultiplier(analysisResult.generalAnalysisResult);
+            Console.WriteLine("Is Old: " + isOld);
+            bool isBlackAndWhite = IsBlackAndWhite(analysisResult.generalAnalysisResult);
+            Console.WriteLine("Is Black and White: " + isBlackAndWhite);
+            string descriptionText = GetDescription(caption, foregroundColor, isOld, isBlackAndWhite);
             Console.WriteLine("Final Description Text: " + descriptionText);
-            bool isPainting = PaintingDetection.IsPainting( analysisResult );
+            bool isPainting = PaintingDetection.IsPainting(analysisResult);
             Console.WriteLine("Is Painting: " + isPainting);
-            bool isPhoto = !isPainting && IsPhoto( analysisResult.generalAnalysisResult );
+            bool isPhoto = !isPainting && IsPhoto(analysisResult.generalAnalysisResult);
             Console.WriteLine("Is Photo: " + isPhoto);
-            bool hasCelebrities = HasCelebrities( analysisResult.celebrityAnalysisResult );
+            bool hasCelebrities = HasCelebrities(analysisResult.celebrityAnalysisResult);
             Console.WriteLine("Has Celebrities: " + hasCelebrities);
-            bool isSign = SignDetection.IsSign( analysisResult );
+            bool isSign = SignDetection.IsSign(analysisResult);
             Console.WriteLine("Is Sign: " + isSign);
 
-            Bitmap composedImage = ComposeImage( sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting, isSign );
+            Bitmap composedImage = ComposeImage(sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting, isSign);
 
             //string comment = Comment.Get();
 
-            return new Appraisal( composedImage, descriptionText );
+            return new Appraisal(composedImage, descriptionText);
         }
 
-        static Caption GetCaption( AnalysisResult analysisResult )
+        static Caption GetCaption(AnalysisResult analysisResult)
         {
             Caption caption = new Caption();
             caption.Text = "Something";
             caption.Confidence = 0.0001f;
 
-            foreach ( Caption c in analysisResult.Description.Captions )
+            foreach (Caption c in analysisResult.Description.Captions)
             {
-                if ( c.Confidence > caption.Confidence )
+                if (c.Confidence > caption.Confidence)
                 {
                     caption = c;
                 }
@@ -568,16 +569,16 @@ namespace AppraisalBot
             return caption;
         }
 
-        static bool IsOld( AnalysisResult analysisResult )
+        static bool IsOld(AnalysisResult analysisResult)
         {
             string[] oldTags = {
                 "old",
                 "vintage",
             };
 
-            foreach (string tag in analysisResult.Description.Tags )
+            foreach (string tag in analysisResult.Description.Tags)
             {
-                if ( oldTags.Contains( tag ) )
+                if (oldTags.Contains(tag))
                 {
                     return true;
                 }
@@ -586,10 +587,10 @@ namespace AppraisalBot
             return false;
         }
 
-        static bool IsBlackAndWhite( AnalysisResult analysisResult )
+        static bool IsBlackAndWhite(AnalysisResult analysisResult)
         {
-            if ( analysisResult.Description.Tags.Contains( "photo")
-            && analysisResult.Description.Tags.Contains("vintage") )
+            if (analysisResult.Description.Tags.Contains("photo")
+            && analysisResult.Description.Tags.Contains("vintage"))
             {
                 // vintage photo means a black and white photo. Black and white photos are black and white.
                 return true;
@@ -598,9 +599,9 @@ namespace AppraisalBot
             return analysisResult.IsBlackAndWhite();
         }
 
-        static bool IsPhoto( AnalysisResult analysisResult )
+        static bool IsPhoto(AnalysisResult analysisResult)
         {
-            if ( analysisResult.Description.Tags.Contains( "photo") )
+            if (analysisResult.Description.Tags.Contains("photo"))
             {
                 return true;
             }
@@ -609,12 +610,12 @@ namespace AppraisalBot
             && !analysisResult.IsLineDrawing();
         }
 
-        static bool HasCelebrities( CelebrityAnalysisResult celebrityResult )
+        static bool HasCelebrities(CelebrityAnalysisResult celebrityResult)
         {
             return celebrityResult.celebrities.Count > 0;
         }
 
-        static float GetPriceExpensiveMultiplier( AnalysisResult analysisResult )
+        static float GetPriceExpensiveMultiplier(AnalysisResult analysisResult)
         {
             string[] expensiveTags = {
                 "gold",
@@ -631,20 +632,20 @@ namespace AppraisalBot
             const float factor = 1.5f;
             float outMultiplier = 1.0f;
 
-            foreach ( string tag in analysisResult.Description.Tags )
+            foreach (string tag in analysisResult.Description.Tags)
             {
-                if ( expensiveTags.Contains( tag ) )
+                if (expensiveTags.Contains(tag))
                 {
                     outMultiplier *= factor;
                 }
             }
 
-            Console.WriteLine( "Expensive multiplier: " + outMultiplier );
+            Console.WriteLine("Expensive multiplier: " + outMultiplier);
 
             return outMultiplier;
         }
 
-        static string GetDescription( Caption caption, string foregroundColor, bool isOld, bool isBlackAndWhite )
+        static string GetDescription(Caption caption, string foregroundColor, bool isOld, bool isBlackAndWhite)
         {
             // Filter and adjust the caption
             string descriptionText = caption.Text;
@@ -685,7 +686,7 @@ namespace AppraisalBot
                 "A pot",
             };
 
-            bool isSimple = commonSimpleDescriptions.Contains( descriptionText );
+            bool isSimple = commonSimpleDescriptions.Contains(descriptionText);
 
             if (isSimple)
             {
@@ -707,7 +708,7 @@ namespace AppraisalBot
                 else
                 {
                     string color = foregroundColor.ToLower();
-                    descriptionText = descriptionText.Substring(0,2) + color + " " + descriptionText.Substring(2);
+                    descriptionText = descriptionText.Substring(0, 2) + color + " " + descriptionText.Substring(2);
                     Console.WriteLine("Added color to simple description: " + color);
                 }
             }
@@ -715,15 +716,15 @@ namespace AppraisalBot
             return descriptionText;
         }
 
-        static string GetForegroundColor( AnalysisResult analysisResult )
+        static string GetForegroundColor(AnalysisResult analysisResult)
         {
             // If the foreground and background colors are the same, use the accent color.
             // Unfortunately the accent color is a hex string so we have to find the nearest
             // color that we know the name of.
             string color = "";
-            if ( analysisResult.Color.DominantColorBackground == analysisResult.Color.DominantColorForeground )
+            if (analysisResult.Color.DominantColorBackground == analysisResult.Color.DominantColorForeground)
             {
-                color = ColorTable.GetClosestColorName( ColorTable.GetColorFromHexString( analysisResult.Color.AccentColor ) );
+                color = ColorTable.GetClosestColorName(ColorTable.GetColorFromHexString(analysisResult.Color.AccentColor));
             }
             else
             {
@@ -736,32 +737,32 @@ namespace AppraisalBot
         static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier, bool isPainting, bool isSign)
         {
             Bitmap drawnBitmap = null;
-            
-            if ( isPainting || isSign )
+
+            if (isPainting || isSign)
             {
-                drawnBitmap = ImageTransforms.ComposeImageOntoPhoto( sourceImage );
+                drawnBitmap = ImageTransforms.ComposeImageOntoPhoto(sourceImage);
             }
             else
             {
                 drawnBitmap = sourceImage.Clone();
             }
 
-            PriceRange priceRange = GetPriceRange( descriptionText, confidence, expensiveMultiplier );
-            int year = GetYear( drawnBitmap, isOld, isBlackAndWhitePhoto );
+            PriceRange priceRange = GetPriceRange(descriptionText, confidence, expensiveMultiplier);
+            int year = GetYear(drawnBitmap, isOld, isBlackAndWhitePhoto);
 
-            string fullCaption = descriptionText + String.Format( " (ca. {0})\n ${1:0,0}-${2:0,0}", year, priceRange.lowPrice, priceRange.highPrice);
+            string fullCaption = descriptionText + String.Format(" (ca. {0})\n ${1:0,0}-${2:0,0}", year, priceRange.lowPrice, priceRange.highPrice);
 
             Bitmap footerImage = null;
-            
-            if ( Directory.Exists("sourceArt" ) )
+
+            if (Directory.Exists("sourceArt"))
             {
                 footerImage = Image.Load<PixelColor>(@"sourceArt/footer.png");
-            } 
+            }
             else
             {
-                Amazon.S3.AmazonS3Client client = new Amazon.S3.AmazonS3Client( Amazon.RegionEndpoint.USEast2 );
-                Amazon.S3.Model.GetObjectResponse response = client.GetObjectAsync( "appraisal-bot", "footer.png" ).GetAwaiter().GetResult();
-                footerImage = Image.Load<PixelColor>( response.ResponseStream );
+                Amazon.S3.AmazonS3Client client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.USEast2);
+                Amazon.S3.Model.GetObjectResponse response = client.GetObjectAsync("appraisal-bot", "footer.png").GetAwaiter().GetResult();
+                footerImage = Image.Load<PixelColor>(response.ResponseStream);
             }
 
             float scale = (float)drawnBitmap.Width / (float)footerImage.Width;
@@ -793,23 +794,23 @@ namespace AppraisalBot
             AffineTransformBuilder footerTransformBuilder = new AffineTransformBuilder()
                     .AppendScale(new SizeF(scale, scale));
 
-            footerImage.Mutate( x => x.Transform(footerTransformBuilder));
+            footerImage.Mutate(x => x.Transform(footerTransformBuilder));
 
-            drawnBitmap.Mutate( x => x.DrawImage( footerImage, new SixLabors.Primitives.Point( 0, (int)footerOriginY), new GraphicsOptions() )
-            .DrawText( textGraphicsOptions, fullCaption, font, PixelColor.White, new PointF( textOriginX + 1, textOriginY + 1 ) ) );
+            drawnBitmap.Mutate(x => x.DrawImage(footerImage, new SixLabors.Primitives.Point(0, (int)footerOriginY), new GraphicsOptions())
+           .DrawText(textGraphicsOptions, fullCaption, font, PixelColor.White, new PointF(textOriginX + 1, textOriginY + 1)));
 
             return drawnBitmap;
         }
 
-        static void TweetAppraisal( Appraisal appraisal )
+        static void TweetAppraisal(Appraisal appraisal)
         {
-            using ( MemoryStream memoryStream = new MemoryStream() )
+            using (MemoryStream memoryStream = new MemoryStream())
             {
                 appraisal.image.SaveAsPng(memoryStream);
                 byte[] bytes = memoryStream.ToArray();
 
                 Console.WriteLine("Uploading image to twitter");
-                Tweetinvi.Models.IMedia media = Tweetinvi.Upload.UploadBinary( new Tweetinvi.Parameters.UploadParameters { Binary = bytes });
+                Tweetinvi.Models.IMedia media = Tweetinvi.Upload.UploadBinary(new Tweetinvi.Parameters.UploadParameters { Binary = bytes });
 
                 Console.WriteLine("Publishing tweet");
                 Tweetinvi.Models.ITweet tweet = Tweetinvi.Tweet.PublishTweet(appraisal.comment, new Tweetinvi.Parameters.PublishTweetOptionalParameters
@@ -829,7 +830,7 @@ namespace AppraisalBot
                 throw new Exception("Not enough items to take subset. Requested: " + numberOfItemsToTake + " Have: " + originalList.Count());
             }
 
-            return originalList.OrderBy( x => rnd.NextDouble()).Take(numberOfItemsToTake);
+            return originalList.OrderBy(x => rnd.NextDouble()).Take(numberOfItemsToTake);
         }
     }
 }
