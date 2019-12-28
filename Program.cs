@@ -189,7 +189,7 @@ namespace AppraisalBot
                 Console.WriteLine("Twitter credentials not set.");
             }
 
-            int numItems = 10;
+            int numItems = 1;
 
             Console.WriteLine("Getting collection listing");
 
@@ -267,7 +267,7 @@ namespace AppraisalBot
                         }
                     }
 
-                    //TweetAppraisal( appraisal );
+                    TweetAppraisal( appraisal );
                 }
 
                 objectCounter++;
