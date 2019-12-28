@@ -15,6 +15,6 @@
     <PackageReference Include="RandomSelection" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <DotNetCliToolReference Include="Amazon.Lambda.Tools" Version="1.8.1" />
+    <DotNetCliToolReference Include="Amazon.Lambda.Tools" Version="2.1.2" />
   </ItemGroup>
 </Project>
