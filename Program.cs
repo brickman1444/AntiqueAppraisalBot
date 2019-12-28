@@ -752,18 +752,7 @@ namespace AppraisalBot
 
             string fullCaption = descriptionText + String.Format(" (ca. {0})\n ${1:0,0}-${2:0,0}", year, priceRange.lowPrice, priceRange.highPrice);
 
-            Bitmap footerImage = null;
-
-            if (Directory.Exists("sourceArt"))
-            {
-                footerImage = Image.Load<PixelColor>(@"sourceArt/footer.png");
-            }
-            else
-            {
-                Amazon.S3.AmazonS3Client client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.USEast2);
-                Amazon.S3.Model.GetObjectResponse response = client.GetObjectAsync("appraisal-bot", "footer.png").GetAwaiter().GetResult();
-                footerImage = Image.Load<PixelColor>(response.ResponseStream);
-            }
+            Bitmap footerImage = LoadImage("footer.png");
 
             float scale = (float)drawnBitmap.Width / (float)footerImage.Width;
             float footerHeight = scale * footerImage.Height;
@@ -831,6 +820,20 @@ namespace AppraisalBot
             }
 
             return originalList.OrderBy(x => rnd.NextDouble()).Take(numberOfItemsToTake);
+        }
+
+        public static Bitmap LoadImage(string fileName)
+        {
+            if (Directory.Exists("sourceArt"))
+            {
+                return Image.Load<PixelColor>(@"sourceArt/" + fileName);
+            }
+            else
+            {
+                Amazon.S3.AmazonS3Client client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.USEast2);
+                Amazon.S3.Model.GetObjectResponse response = client.GetObjectAsync("appraisal-bot", fileName).GetAwaiter().GetResult();
+                return Image.Load<PixelColor>(response.ResponseStream);
+            }
         }
     }
 }

@@ -62,7 +62,7 @@ namespace AppraisalBot
                 r1prime = Vector2.Normalize(r1prime - r3prime) * scaledHeight * rightSideHeight / leftSideHeight + r3prime;
             }
 
-            Bitmap photoImage = Image.Load<PixelColor>( "sourceArt/" + backgroundImageName );
+            Bitmap photoImage = Program.LoadImage(backgroundImageName);
 
             return PerspectiveTransform( sourceArtImage, photoImage, r0prime, r1prime, r2prime, r3prime );
         }
