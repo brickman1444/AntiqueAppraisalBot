@@ -13,8 +13,10 @@ using Microsoft.ProjectOxford.Vision.Contract;
 using SixLabors.ImageSharp;
 using SixLabors.Fonts;
 using SixLabors.Primitives;
+using SixLabors.ImageSharp.Processing;
 
-using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.Rgba32>;
+using PixelColor = SixLabors.ImageSharp.PixelFormats.Rgba32;
+using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>;
 
 namespace AppraisalBot
 {
@@ -187,7 +189,7 @@ namespace AppraisalBot
                 Console.WriteLine("Twitter credentials not set.");
             }
 
-            int numItems = 1;
+            int numItems = 10;
 
             Console.WriteLine("Getting collection listing");
 
@@ -265,7 +267,7 @@ namespace AppraisalBot
                         }
                     }
 
-                    TweetAppraisal( appraisal );
+                    //TweetAppraisal( appraisal );
                 }
 
                 objectCounter++;
@@ -301,26 +303,29 @@ namespace AppraisalBot
 
         static IEnumerable<int> GetRandomObjectIDs(int numItems)
         {
-            // total objects: 471,061
-            string[] materials = {
-                "Bags", // 3
-                "Jewelry", // 17
-                "Sculpture", // 232
-                "Bowls", // 19
-                "Furniture", // 66
-                "Musical%20instruments", // 6
-                "Vessels", // 41
-                "Ceramics", // 66
-                "Wood", // 110
-                "Paintings", // 491
-                "Timepieces", // 2
-                "Arms", // 7
-                "Costume", // 42
-                "Cases", // 10
-            };
+            BNolan.RandomSelection.Selector<string> materialSelector = new BNolan.RandomSelection.Selector<string>();
 
-            Random rnd = new Random();
-            string material = materials[ rnd.Next(0, materials.Length)];
+            // Weights come from how many items fit the search criteria. This can be found by hitting:
+            // https://collectionapi.metmuseum.org/public/collection/v1/search?medium=Furniture&q=Furniture&hasImages=true
+            // and replacing Furniture with the name of the material.
+            // For scale, there are around 470,000 total objects.
+            materialSelector.TryAddItem("Bags", "Bags", 3);
+            materialSelector.TryAddItem("Jewelry", "Jewelry", 17);
+            materialSelector.TryAddItem("Sculpture", "Sculpture",232);
+            materialSelector.TryAddItem("Bowls", "Bowls", 19);
+            materialSelector.TryAddItem("Furniture", "Furniture", 66);
+            materialSelector.TryAddItem("Musical%20instruments", "Musical%20instruments", 6);
+            materialSelector.TryAddItem("Vessels", "Vessels", 41);
+            materialSelector.TryAddItem("Ceramics", "Ceramics", 66);
+            materialSelector.TryAddItem("Wood", "Wood", 110);
+            materialSelector.TryAddItem("Paintings", "Paintings",491);
+            materialSelector.TryAddItem("Timepieces", "Timepieces", 2);
+            materialSelector.TryAddItem("Arms", "Arms",7);
+            materialSelector.TryAddItem("Costume", "Costume", 42);
+            materialSelector.TryAddItem("Cases", "Cases", 10);
+            materialSelector.TryAddItem("Metal", "Metal", 384);
+
+            string material = materialSelector.RandomSelect(1).First().Value;
 
             string searchURL = GetMetSearchAPIUrl( material );
 
@@ -362,7 +367,7 @@ namespace AppraisalBot
                 // returned values are returned as a stream, then read into a string
                 using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponseAsync().GetAwaiter().GetResult()){
                     
-                    Bitmap image = Image.Load( lxResponse.GetResponseStream() );
+                    Bitmap image = Image.Load<PixelColor>( lxResponse.GetResponseStream() );
 
                     if (image.Width >= 250)
                     {
@@ -504,7 +509,7 @@ namespace AppraisalBot
                 minYear = 1000;
             }
 
-            Rgba32 pixelSampleColor = image[ image.Width / 3, image.Height / 3 ];
+            PixelColor pixelSampleColor = image[ image.Width / 3, image.Height / 3 ];
 
             float red = (float)pixelSampleColor.R / 255.0f;
             float green = (float)pixelSampleColor.G / 255.0f;
@@ -750,13 +755,13 @@ namespace AppraisalBot
             
             if ( Directory.Exists("sourceArt" ) )
             {
-                footerImage = Image.Load(@"sourceArt/footer.png");
+                footerImage = Image.Load<PixelColor>(@"sourceArt/footer.png");
             } 
             else
             {
                 Amazon.S3.AmazonS3Client client = new Amazon.S3.AmazonS3Client( Amazon.RegionEndpoint.USEast2 );
                 Amazon.S3.Model.GetObjectResponse response = client.GetObjectAsync( "appraisal-bot", "footer.png" ).GetAwaiter().GetResult();
-                footerImage = Image.Load( response.ResponseStream );
+                footerImage = Image.Load<PixelColor>( response.ResponseStream );
             }
 
             float scale = (float)drawnBitmap.Width / (float)footerImage.Width;
@@ -782,11 +787,20 @@ namespace AppraisalBot
             FontFamily family = SystemFonts.Find("DejaVu Sans"); //assumes arial has been installed
             Font font = new Font(family, fontSize, FontStyle.Bold);
 
-            drawnBitmap.Mutate( x => x.DrawImage( footerImage, new Size(drawnBitmap.Width, (int)footerHeight), new SixLabors.Primitives.Point( 0, (int)footerOriginY), new GraphicsOptions() )
-            .DrawText( fullCaption, font, Rgba32.White, new PointF( textOriginX + 1, textOriginY + 1 ) ) );
+            TextGraphicsOptions textGraphicsOptions = new TextGraphicsOptions();
+            textGraphicsOptions.WrapTextWidth = drawnBitmap.Width - textOriginX - 10;
+
+            AffineTransformBuilder footerTransformBuilder = new AffineTransformBuilder()
+                    .AppendScale(new SizeF(scale, scale));
+
+            footerImage.Mutate( x => x.Transform(footerTransformBuilder));
+
+            drawnBitmap.Mutate( x => x.DrawImage( footerImage, new SixLabors.Primitives.Point( 0, (int)footerOriginY), new GraphicsOptions() )
+            .DrawText( textGraphicsOptions, fullCaption, font, PixelColor.White, new PointF( textOriginX + 1, textOriginY + 1 ) ) );
 
             return drawnBitmap;
         }
+
         static void TweetAppraisal( Appraisal appraisal )
         {
             using ( MemoryStream memoryStream = new MemoryStream() )

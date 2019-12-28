@@ -1,12 +1,10 @@
 using System;
-using System.IO;
 using System.Numerics;
 
 using SixLabors.ImageSharp;
-using SixLabors.Primitives;
 
-using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.Rgba32>;
-using PixelColor = SixLabors.ImageSharp.Rgba32;
+using PixelColor = SixLabors.ImageSharp.PixelFormats.Rgba32;
+using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>;
 
 namespace AppraisalBot
 {
@@ -64,7 +62,7 @@ namespace AppraisalBot
                 r1prime = Vector2.Normalize(r1prime - r3prime) * scaledHeight * rightSideHeight / leftSideHeight + r3prime;
             }
 
-            Bitmap photoImage = Image.Load( "sourceArt/" + backgroundImageName );
+            Bitmap photoImage = Image.Load<PixelColor>( "sourceArt/" + backgroundImageName );
 
             return PerspectiveTransform( sourceArtImage, photoImage, r0prime, r1prime, r2prime, r3prime );
         }

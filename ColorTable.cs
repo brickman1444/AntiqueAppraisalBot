@@ -1,6 +1,6 @@
 using System;
 
-using SixLabors.ImageSharp;
+using Rgba32 = SixLabors.ImageSharp.PixelFormats.Rgba32;
 
 namespace AppraisalBot
 {
@@ -8,6 +8,7 @@ namespace AppraisalBot
     {
         struct ColorData
         {
+            
             public readonly Rgba32 color;
             public readonly string name;
 
