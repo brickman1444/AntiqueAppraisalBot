@@ -1,8 +1,6 @@
 using System;
 using System.Numerics;
 
-using SixLabors.ImageSharp;
-
 using PixelColor = SixLabors.ImageSharp.PixelFormats.Rgba32;
 using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>;
 

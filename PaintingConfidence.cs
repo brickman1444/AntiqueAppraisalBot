@@ -1,8 +1,6 @@
 using System;
 using System.Linq;
 
-using Microsoft.ProjectOxford.Vision.Contract;
-
 namespace AppraisalBot
 {
     static class PaintingDetection
