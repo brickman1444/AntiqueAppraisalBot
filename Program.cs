@@ -420,7 +420,7 @@ namespace AppraisalBot
             }
         }
 
-        static PriceRange GetPriceRange(string caption, double confidence, float expensiveMultiplier)
+        static PriceRange GetPriceRange(string caption, double confidence, float expensiveMultiplier, Random rnd)
         {
             PriceRange priceRange;
             priceRange.lowPrice = 0;
@@ -433,7 +433,6 @@ namespace AppraisalBot
             }
 
             // Randomly increase price
-            Random rnd = new Random();
             priceRange.highPrice *= (int)(1.0f + rnd.NextDouble() * 3.0);
 
             priceRange.highPrice = (int)(priceRange.highPrice * expensiveMultiplier);
@@ -505,7 +504,8 @@ namespace AppraisalBot
             bool isSign = SignDetection.IsSign(analysisResult);
             Console.WriteLine("Is Sign: " + isSign);
 
-            Bitmap composedImage = ComposeImage(sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting, isSign);
+            Random random = new Random();
+            Bitmap composedImage = ComposeImage(sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting, isSign, random);
 
             //string comment = Comment.Get();
 
@@ -694,7 +694,7 @@ namespace AppraisalBot
             return color;
         }
 
-        public static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier, bool isPainting, bool isSign)
+        public static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier, bool isPainting, bool isSign, Random random)
         {
             Bitmap drawnBitmap = null;
 
@@ -707,7 +707,7 @@ namespace AppraisalBot
                 drawnBitmap = sourceImage.Clone();
             }
 
-            PriceRange priceRange = GetPriceRange(descriptionText, confidence, expensiveMultiplier);
+            PriceRange priceRange = GetPriceRange(descriptionText, confidence, expensiveMultiplier, random);
             int year = GetYear(drawnBitmap, isOld, isBlackAndWhitePhoto);
 
             string fullCaption = descriptionText + String.Format(" (ca. {0})\n ${1:0,0}-${2:0,0}", year, priceRange.lowPrice, priceRange.highPrice);
