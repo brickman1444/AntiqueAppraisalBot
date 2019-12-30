@@ -18,7 +18,7 @@ namespace AppraisalBot
         public static void AssertImagesAreTheSame(Bitmap imageA, Bitmap imageB)
         {
             float percentDifference = GetPercentDifference(imageA, imageB);
-            Assert.InRange(percentDifference, 0.0f, 0.002f);
+            Assert.InRange(percentDifference, 0.0f, 0.01f);
         }
 
         public static float GetPercentDifference(Bitmap imageA, Bitmap imageB)
