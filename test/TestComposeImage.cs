@@ -39,10 +39,10 @@ namespace AppraisalBot
             return new Random(0);
         }
 
-        public static bool AreImagesTheSame(Bitmap imageA, Bitmap imageB)
+        public static void AssertImagesAreTheSame(Bitmap imageA, Bitmap imageB)
         {
             float percentDifference = GetPercentDifference(imageA, imageB);
-            return percentDifference >= 0.0f && percentDifference <= 0.001f;
+            Assert.InRange(percentDifference, 0.0f, 0.002f);
         }
 
         public static float GetPercentDifference(Bitmap imageA, Bitmap imageB)
@@ -93,7 +93,7 @@ namespace AppraisalBot
 
             Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "finalImage0.jpg");
 
-            Assert.InRange(TestComposeImageUtils.GetPercentDifference(actualImage, expectedImage), 0.0f, 0.001f);
+            TestComposeImageUtils.AssertImagesAreTheSame(expectedImage, actualImage);
         }
     }
 }
