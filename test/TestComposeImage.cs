@@ -93,7 +93,7 @@ namespace AppraisalBot
 
             Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "finalImage0.jpg");
 
-            Assert.True(TestComposeImageUtils.AreImagesTheSame(actualImage, expectedImage));
+            Assert.InRange(TestComposeImageUtils.GetPercentDifference(actualImage, expectedImage), 0.0f, 0.001f);
         }
     }
 }
