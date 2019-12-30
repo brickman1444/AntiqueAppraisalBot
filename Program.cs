@@ -227,7 +227,7 @@ namespace AppraisalBot
                         }
                     }
 
-                    TweetAppraisal( appraisal );
+                    TweetAppraisal(appraisal);
                 }
 
                 objectCounter++;

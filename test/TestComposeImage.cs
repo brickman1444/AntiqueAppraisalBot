@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-using System.Reflection;
 
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
@@ -69,7 +67,7 @@ namespace AppraisalBot
 
                     int pixelDistance = GetManhattanDistanceInRgbaSpace(ref aPixel, ref bPixel);
 
-                    float pixelDifference = pixelDistance / ( 256.0f * 4.0f );
+                    float pixelDifference = pixelDistance / (256.0f * 4.0f);
 
                     amountOfPixelDifference += pixelDifference;
                 }
@@ -85,7 +83,7 @@ namespace AppraisalBot
 
         private static int Diff(ushort a, ushort b) => Math.Abs(a - b);
     }
-    
+
     public static class TestComposeImage
     {
         [Fact]
