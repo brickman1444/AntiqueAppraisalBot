@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace AppraisalBot
@@ -11,17 +8,21 @@ namespace AppraisalBot
         [InlineData(111, 230001, 100, 230000)]
         [InlineData(111, 222, 110, 220)]
         [InlineData(1, 5, 1, 5)]
-        public static void PriceRangesAreRoundedToAppealingNumbers(int inLowPrice, int inHighPrice, int outLowPrice, int outHighPrice)
+        public static void PriceRangesAreRoundedToAppealingNumbers(int inLowPrice, int inHighPrice, int expectedRoundedLowPrice, int expectedRoundedHighPrice)
         {
-            PriceRange range = new PriceRange{
+            PriceRange inputRange = new PriceRange{
                 lowPrice = inLowPrice,
                 highPrice = inHighPrice,
             };
 
-            range.RoundPrices();
+            PriceRange roundedRange = PriceRange.RoundPrices(inputRange);
 
-            Assert.Equal(range.lowPrice, outLowPrice);
-            Assert.Equal(range.highPrice, outHighPrice);
+            // Input range shouldn't be changed
+            Assert.Equal(inLowPrice, inputRange.lowPrice);
+            Assert.Equal(inHighPrice, inputRange.highPrice);
+
+            Assert.Equal(expectedRoundedLowPrice, roundedRange.lowPrice);
+            Assert.Equal(expectedRoundedHighPrice, roundedRange.highPrice);
         }
     }
 }
