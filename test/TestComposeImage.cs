@@ -10,37 +10,38 @@ using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba
 
 namespace AppraisalBot
 {
+    public static class TestComposeImageUtils
+    {
+        public static void UpdateExpectedOutput()
+        {
+            Bitmap composedImage = ComposeImage();
+
+            composedImage.Save(@"testArt/finalImage0.jpg");
+        }
+
+        public static Bitmap ComposeImage()
+        {
+            Bitmap sourceImage =  Program.LoadImage(Program.LoadImageType.Test, "sourceImage0.jpg");
+
+            return Program.ComposeImage(
+                sourceImage,
+                "test description that is kind of long and has multiple lines",
+                0.5f,
+                false,
+                false,
+                1.0f,
+                false,
+                false);
+        }
+    }
+
     public static class TestComposeImage
     {
+
         [Fact]
         public static void ComposeImageAcceptanceTest()
         {
-            var assembly = Assembly.GetAssembly(typeof(Program));
-            var resourceStream = assembly.GetManifestResourceStream("AppraisalBot.testArt.sourceImage0.jpg");
-
-            Assert.NotNull(resourceStream);
-
-            string[] resourceNames = assembly.GetManifestResourceNames();
-
-            //Assert.Equal("", assembly.GetName().Name);
-
-            Bitmap image = Image.Load<PixelColor>(resourceStream);
-
-            Assert.Equal(0, image.Height);
-
-            //using (var reader = new StreamReader(resourceStream, Encoding.UTF8))
-            //{
-            //    return await reader.ReadToEndAsync();
-            //}
-
-            //string path = Path.GetRelativePath(Directory.GetCurrentDirectory(), @"testArt/sourceImage0.jpg");
-
-            //Console.WriteLine(Directory.GetCurrentDirectory());
-            //Console.WriteLine(path);
-
-            //Assert.True(File.Exists(path), Assembly.GetExecutingAssembly().GetName().CodeBase);
-
-            //Bitmap sourceImage = Image.Load<PixelColor>(@"testArt/sourceImage0.jpg");
+            TestComposeImageUtils.ComposeImage();
         }
     }
 }

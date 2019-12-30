@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 using Newtonsoft.Json;
 
@@ -91,6 +92,13 @@ namespace AppraisalBot
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
             Console.WriteLine("Beginning program");
+
+            if (args.Length != 0 && args[0] == "update-expected-acceptance-test-output")
+            {
+                UpdateExpectedAcceptanceTestOutput.Run();
+                Console.WriteLine("Output updated.");
+                return;
+            }
 
             // Delete the previous output
             if (Directory.Exists("images"))
@@ -686,7 +694,7 @@ namespace AppraisalBot
             return color;
         }
 
-        static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier, bool isPainting, bool isSign)
+        public static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier, bool isPainting, bool isSign)
         {
             Bitmap drawnBitmap = null;
 
@@ -704,7 +712,7 @@ namespace AppraisalBot
 
             string fullCaption = descriptionText + String.Format(" (ca. {0})\n ${1:0,0}-${2:0,0}", year, priceRange.lowPrice, priceRange.highPrice);
 
-            Bitmap footerImage = LoadImage("footer.png");
+            Bitmap footerImage = LoadImage(LoadImageType.Source, "footer.png");
 
             float scale = (float)drawnBitmap.Width / (float)footerImage.Width;
             float footerHeight = scale * footerImage.Height;
@@ -774,18 +782,38 @@ namespace AppraisalBot
             return originalList.OrderBy(x => rnd.NextDouble()).Take(numberOfItemsToTake);
         }
 
-        public static Bitmap LoadImage(string fileName)
+        public enum LoadImageType
         {
-            if (Directory.Exists("sourceArt"))
+            Source,
+            Test
+        }
+
+        public static Bitmap LoadImage(LoadImageType type, string fileName)
+        {
+            string directory = type == LoadImageType.Source ? "sourceArt" : "testArt";
+
+            if (Program.IsRunningTests())
             {
-                return Image.Load<PixelColor>(@"sourceArt/" + fileName);
+                return Image.Load<PixelColor>("../../../" + directory + "/" + fileName);
             }
             else
             {
-                Amazon.S3.AmazonS3Client client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.USEast2);
-                Amazon.S3.Model.GetObjectResponse response = client.GetObjectAsync("appraisal-bot", fileName).GetAwaiter().GetResult();
-                return Image.Load<PixelColor>(response.ResponseStream);
+                if (Directory.Exists(directory))
+                {
+                    return Image.Load<PixelColor>(directory + "/" + fileName);
+                }
+                else
+                {
+                    Amazon.S3.AmazonS3Client client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.USEast2);
+                    Amazon.S3.Model.GetObjectResponse response = client.GetObjectAsync("appraisal-bot", fileName).GetAwaiter().GetResult();
+                    return Image.Load<PixelColor>(response.ResponseStream);
+                }
             }
+        }
+
+        public static bool IsRunningTests()
+        {
+            return Assembly.GetEntryAssembly().GetName().Name.Contains("test");
         }
     }
 }
