@@ -66,7 +66,7 @@ namespace AppraisalBot
         // TODO: Cover this with unit tests
         public void RoundPrices()
         {
-            // Get the order of magnitude of the higher price. We'll 
+            // Get the order of magnitude of the higher price.
             int highPriceOrder = (int)Math.Floor(Math.Log10(highPrice));
 
             highPriceOrder -= 1; // subtract 1 to keep two meaningful digits on at least the high price
