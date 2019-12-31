@@ -3,7 +3,6 @@ using System.Numerics;
 
 using SixLabors.ImageSharp.Processing;
 using MathNet.Numerics.LinearAlgebra;
-using SixLabors.Primitives;
 
 using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>;
 
@@ -65,10 +64,10 @@ namespace AppraisalBot
 
             Bitmap photoImage = Program.LoadImage(Program.LoadImageType.Source, backgroundImageName);
 
-            return PerspectiveTransform(sourceArtImage, photoImage, new Point((int)r0prime.X, (int)r0prime.Y), new Point((int)r1prime.X, (int)r1prime.Y), new Point((int)r2prime.X, (int)r2prime.Y), new Point((int)r3prime.X, (int)r3prime.Y));
+            return PerspectiveTransform(sourceArtImage, photoImage, r0prime, r1prime, r2prime, r3prime);
         }
 
-        public static Bitmap PerspectiveTransform(Bitmap sourceArtImage, Bitmap destinationImage, Point r0prime, Point r1prime, Point r2prime, Point r3prime)
+        public static Bitmap PerspectiveTransform(Bitmap sourceArtImage, Bitmap destinationImage, Vector2 r0prime, Vector2 r1prime, Vector2 r2prime, Vector2 r3prime)
         {
             // Corner numbering chosen arbitrarily
             // 0    1
@@ -90,13 +89,13 @@ namespace AppraisalBot
             return destinationImage;
         }
 
-        private static Matrix4x4 CalculateProjectiveTransformationMatrix(int width, int height, Point newTopLeft, Point newTopRight, Point newBottomLeft, Point newBottomRight)
+        private static Matrix4x4 CalculateProjectiveTransformationMatrix(int width, int height, Vector2 newTopLeft, Vector2 newTopRight, Vector2 newBottomLeft, Vector2 newBottomRight)
         {
             Matrix<double> s = MapBasisToPoints(
-                new Point(0, 0),
-                new Point(width, 0),
-                new Point(0, height),
-                new Point(width, height)
+                new Vector2(0, 0),
+                new Vector2(width, 0),
+                new Vector2(0, height),
+                new Vector2(width, height)
             );
             Matrix<double> d = MapBasisToPoints(newTopLeft, newTopRight, newBottomLeft, newBottomRight);
             Matrix<double> result = d.Multiply(AdjugateMatrix(s));
@@ -129,7 +128,7 @@ namespace AppraisalBot
             return adj;
         }
 
-        private static Matrix<double> MapBasisToPoints(Point p1, Point p2, Point p3, Point p4)
+        private static Matrix<double> MapBasisToPoints(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4)
         {
             var A = Matrix<double>.Build.DenseOfArray(new double[,]
             {
