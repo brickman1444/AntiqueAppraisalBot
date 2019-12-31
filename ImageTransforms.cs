@@ -11,7 +11,7 @@ namespace AppraisalBot
 {
     static class ImageTransforms
     {
-        public static Bitmap ComposeImageOntoPhoto( Bitmap sourceArtImage )
+        public static Bitmap ComposeImageOntoPhoto(Bitmap sourceArtImage)
         {
             bool isWide = sourceArtImage.Width > sourceArtImage.Height;
 
@@ -25,36 +25,36 @@ namespace AppraisalBot
             // Find which image fits the source best. The vector values are taken from
             // where the reference object's corners in the source image are. After
             // composing the image, the art image will cover up the reference object.
-            
+
             // TODO: Turn this into a data file instead of code.
             // TODO: Outside this function, decide whether it is a painting or paper and choose relevant background image.
 
-            if ( isWide )
+            if (isWide)
             {
-                r0prime = new Vector2( 217, 168 );
-                r1prime = new Vector2( 784, 161 );
-                r2prime = new Vector2( 199, 597 );
-                r3prime = new Vector2( 803, 593 );
+                r0prime = new Vector2(217, 168);
+                r1prime = new Vector2(784, 161);
+                r2prime = new Vector2(199, 597);
+                r3prime = new Vector2(803, 593);
                 backgroundImageName = "widePaperSource.jpg";
             }
             else
             {
-                r0prime = new Vector2( 187, 318 );
-                r1prime = new Vector2( 553, 314 );
-                r2prime = new Vector2( 155, 838 );
-                r3prime = new Vector2( 584, 837 );
+                r0prime = new Vector2(187, 318);
+                r1prime = new Vector2(553, 314);
+                r2prime = new Vector2(155, 838);
+                r3prime = new Vector2(584, 837);
                 backgroundImageName = "tallPaperSource.jpg";
             }
 
-            float leftSideHeight = Vector2.Distance( r0prime, r2prime );
-            float rightSideHeight = Vector2.Distance( r1prime, r3prime );
+            float leftSideHeight = Vector2.Distance(r0prime, r2prime);
+            float rightSideHeight = Vector2.Distance(r1prime, r3prime);
 
-            float bottomSideWidth = Vector2.Distance( r2prime, r3prime );
+            float bottomSideWidth = Vector2.Distance(r2prime, r3prime);
 
             // Keeping the source image's aspect ratio, what would it's height be in the destination
             float scaledHeight = (float)sourceArtImage.Height / (float)sourceArtImage.Width * bottomSideWidth;
 
-            if ( scaledHeight > leftSideHeight )
+            if (scaledHeight > leftSideHeight)
             {
                 // I know this math isn't right. It slightly distorts the output but it gets the job done and
                 // I can understand what it's doing.
@@ -65,16 +65,16 @@ namespace AppraisalBot
 
             Bitmap photoImage = Program.LoadImage(Program.LoadImageType.Source, backgroundImageName);
 
-            return PerspectiveTransform( sourceArtImage, photoImage, new Point((int)r0prime.X, (int)r0prime.Y), new Point((int)r1prime.X, (int)r1prime.Y), new Point((int)r2prime.X, (int)r2prime.Y), new Point((int)r3prime.X, (int)r3prime.Y) );
+            return PerspectiveTransform(sourceArtImage, photoImage, new Point((int)r0prime.X, (int)r0prime.Y), new Point((int)r1prime.X, (int)r1prime.Y), new Point((int)r2prime.X, (int)r2prime.Y), new Point((int)r3prime.X, (int)r3prime.Y));
         }
 
-        public static Bitmap PerspectiveTransform( Bitmap sourceArtImage, Bitmap destinationImage, Point r0prime, Point r1prime, Point r2prime, Point r3prime )
+        public static Bitmap PerspectiveTransform(Bitmap sourceArtImage, Bitmap destinationImage, Point r0prime, Point r1prime, Point r2prime, Point r3prime)
         {
             // Corner numbering chosen arbitrarily
             // 0    1
             //
             // 2    3
-            
+
             Matrix4x4 newMatrix = CalculateProjectiveTransformationMatrix(
                 sourceArtImage.Width,
                 sourceArtImage.Height,
@@ -83,9 +83,9 @@ namespace AppraisalBot
                 r2prime,
                 r3prime);
 
-            sourceArtImage.Mutate( x => x.Transform(new ProjectiveTransformBuilder().AppendMatrix(newMatrix)));
+            sourceArtImage.Mutate(x => x.Transform(new ProjectiveTransformBuilder().AppendMatrix(newMatrix)));
 
-            destinationImage.Mutate( x => x.DrawImage(sourceArtImage, 1.0f));
+            destinationImage.Mutate(x => x.DrawImage(sourceArtImage, 1.0f));
 
             return destinationImage;
         }
@@ -140,7 +140,7 @@ namespace AppraisalBot
             var b = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.Dense(new double[] { p4.X, p4.Y, 1 });
             var aj = AdjugateMatrix(A);
             var v = aj.Multiply(b);
-            var m = Matrix<double>.Build.DenseOfArray(new [,]
+            var m = Matrix<double>.Build.DenseOfArray(new[,]
             {
                 {v[0], 0, 0 },
                 {0, v[1], 0 },
