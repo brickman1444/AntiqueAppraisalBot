@@ -436,11 +436,11 @@ namespace AppraisalBot
             }
 
             // Randomly increase price
-            priceRange.highPrice *= (int)(1.0f + rnd.NextDouble() * 3.0);
+            priceRange.highPrice *= (int)(1.0f + rnd.NextDouble() * 30.0f);
 
             priceRange.highPrice = (int)(priceRange.highPrice * expensiveMultiplier);
 
-            priceRange.highPrice *= 20; // General multiplier to inflate prices
+            priceRange.highPrice *= 2; // General multiplier to inflate prices
 
             priceRange.lowPrice = (int)(priceRange.highPrice * confidence);
 
