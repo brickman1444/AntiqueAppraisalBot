@@ -23,10 +23,10 @@ namespace AppraisalBot
             ImageTransforms.PerspectiveTransform(
                 sourceImage,
                 copiedSourceImage,
-                new System.Numerics.Vector2( 10, 10 ),
-                new System.Numerics.Vector2( 250, 50 ),
-                new System.Numerics.Vector2( 30, 500 ),
-                new System.Numerics.Vector2( 400, 300 ));
+                new SixLabors.Primitives.Point(10, 10),
+                new SixLabors.Primitives.Point(250, 50),
+                new SixLabors.Primitives.Point(30, 500),
+                new SixLabors.Primitives.Point(400, 300));
             return copiedSourceImage;
         }
     }
@@ -34,7 +34,7 @@ namespace AppraisalBot
     public static class TestImageTransforms
     {
         [Fact]
-        public static void ComposeImageAcceptanceTest()
+        public static void TransformImageAcceptanceTest()
         {
             Bitmap actualImage = TestImageTransformUtils.TransformImage();
 

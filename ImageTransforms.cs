@@ -2,8 +2,9 @@ using System;
 using System.Numerics;
 
 using SixLabors.ImageSharp.Processing;
+using MathNet.Numerics.LinearAlgebra;
+using SixLabors.Primitives;
 
-using PixelColor = SixLabors.ImageSharp.PixelFormats.Rgba32;
 using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>;
 
 namespace AppraisalBot
@@ -64,126 +65,88 @@ namespace AppraisalBot
 
             Bitmap photoImage = Program.LoadImage(Program.LoadImageType.Source, backgroundImageName);
 
-            return PerspectiveTransform( sourceArtImage, photoImage, r0prime, r1prime, r2prime, r3prime );
+            return PerspectiveTransform( sourceArtImage, photoImage, new Point((int)r0prime.X, (int)r0prime.Y), new Point((int)r1prime.X, (int)r1prime.Y), new Point((int)r2prime.X, (int)r2prime.Y), new Point((int)r3prime.X, (int)r3prime.Y) );
         }
 
-        public static Bitmap PerspectiveTransform( Bitmap sourceArtImage, Bitmap destinationImage, Vector2 r0prime, Vector2 r1prime, Vector2 r2prime, Vector2 r3prime )
+        public static Bitmap PerspectiveTransform( Bitmap sourceArtImage, Bitmap destinationImage, Point r0prime, Point r1prime, Point r2prime, Point r3prime )
         {
             // Corner numbering chosen arbitrarily
             // 0    1
             //
             // 2    3
             
-            // Locations of the art image corners in source space.
-            Vector2 r0 = new Vector2( 0,                    0 );
-            Vector2 r1 = new Vector2( sourceArtImage.Width, 0 );
-            Vector2 r2 = new Vector2( 0,                    sourceArtImage.Height );
-            Vector2 r3 = new Vector2( sourceArtImage.Width, sourceArtImage.Height );
+            Matrix4x4 newMatrix = CalculateProjectiveTransformationMatrix(
+                sourceArtImage.Width,
+                sourceArtImage.Height,
+                r0prime,
+                r1prime,
+                r2prime,
+                r3prime);
 
-            // To transform the image into destination space, we will need a perspective
-            // matrix. We will solve a system of equations and then use the results from
-            // that to create the perspective matrix. Reference for this math is at:
-            // http://www.vis.uky.edu/~ryang/Teaching/cs635-2016spring/Lectures/05-geo_trans_1.pdf
+            sourceArtImage.Mutate( x => x.Transform(new ProjectiveTransformBuilder().AppendMatrix(newMatrix)));
 
-            double[,] systemOfEquations = {
-                {r0.X, r0.Y, 1.0, 0.0, 0.0, 0.0, -r0.X * r0prime.X, -r0.Y * r0prime.X},
-                {r1.X, r1.Y, 1.0, 0.0, 0.0, 0.0, -r1.X * r1prime.X, -r1.Y * r1prime.X},
-                {r2.X, r2.Y, 1.0, 0.0, 0.0, 0.0, -r2.X * r2prime.X, -r2.Y * r2prime.X},
-                {r3.X, r3.Y, 1.0, 0.0, 0.0, 0.0, -r3.X * r3prime.X, -r3.Y * r3prime.X},
-
-                {0.0, 0.0, 0.0, r0.X, r0.Y, 1.0, -r0.X * r0prime.Y, -r0.Y * r0prime.Y},
-                {0.0, 0.0, 0.0, r1.X, r1.Y, 1.0, -r1.X * r1prime.Y, -r1.Y * r1prime.Y},
-                {0.0, 0.0, 0.0, r2.X, r2.Y, 1.0, -r2.X * r2prime.Y, -r2.Y * r2prime.Y},
-                {0.0, 0.0, 0.0, r3.X, r3.Y, 1.0, -r3.X * r3prime.Y, -r3.Y * r3prime.Y},
-            };
-
-            double[] otherSideOfTheEqualsSign = { 
-                r0prime.X,
-                r1prime.X,
-                r2prime.X,
-                r3prime.X,
-                r0prime.Y,
-                r1prime.Y,
-                r2prime.Y,
-                r3prime.Y,
-            };
-
-            double[] solveResults = StarMathLib.StarMath.solve( systemOfEquations, otherSideOfTheEqualsSign );
-
-            // Perspective matrix transforms a point from source space to destination space.
-            Matrix4x4 perspectiveTransform = new Matrix4x4(
-                (float)solveResults[0], (float)solveResults[3], (float)solveResults[6], 0.0f,
-                (float)solveResults[1], (float)solveResults[4], (float)solveResults[7], 0.0f,
-                (float)solveResults[2], (float)solveResults[5], 1.0f,                   0.0f,
-                0.0f,                   0.0f,                   0.0f,                   1.0f);
-
-            // Inverted perspective matrix transforms a point from destination space to source space.
-            Matrix4x4 invertedPerspectiveTransform = new Matrix4x4();
-            Matrix4x4.Invert( perspectiveTransform, out invertedPerspectiveTransform );
-
-            // This could probably be optimized to only iterate through the pixels that matter.
-            for ( int destinationY = 0; destinationY < destinationImage.Height; destinationY++ )
-            {
-                for ( int destinationX = 0; destinationX < destinationImage.Width; destinationX++ )
-                {
-                    Vector4 destinationPoint = new Vector4( destinationX, destinationY, 1.0f, 0.0f );
-
-                    Vector4 sourcePoint = Vector4.Transform( destinationPoint, invertedPerspectiveTransform );
-
-                    sourcePoint /= sourcePoint.Z; // Normalize 2D homogenous coordinates
-
-                    if ( sourcePoint.X > -1 && sourcePoint.Y > -1
-                    && sourcePoint.X < sourceArtImage.Width + 1 && sourcePoint.Y < sourceArtImage.Height + 1 )
-                    {
-                        destinationImage[ destinationX, destinationY ] = SampleImage( sourceArtImage, sourcePoint );
-                    }
-                }
-            }
+            destinationImage.Mutate( x => x.DrawImage(sourceArtImage, 1.0f));
 
             return destinationImage;
         }
 
-        public static PixelColor SampleImage( Bitmap image, Vector4 point )
+        private static Matrix4x4 CalculateProjectiveTransformationMatrix(int width, int height, Point newTopLeft, Point newTopRight, Point newBottomLeft, Point newBottomRight)
         {
-            // Does a bilinear interpolation. Not as good as it could be but prevents
-            // major aliasing.
-
-            Vector2[] samplePoints = {
-                new Vector2( (float)Math.Floor( point.X ), (float)Math.Floor( point.Y ) ),
-                new Vector2( (float)Math.Ceiling( point.X ), (float)Math.Floor( point.Y ) ),
-                new Vector2( (float)Math.Floor( point.X ), (float)Math.Ceiling( point.Y ) ),
-                new Vector2( (float)Math.Ceiling( point.X ), (float)Math.Ceiling( point.Y ) ),
-                 };
-
-            Vector4[] sampleColors = new Vector4[4];
-
-            for ( int i = 0; i < samplePoints.Length; i++ )
+            Matrix<double> s = MapBasisToPoints(
+                new Point(0, 0),
+                new Point(width, 0),
+                new Point(0, height),
+                new Point(width, height)
+            );
+            Matrix<double> d = MapBasisToPoints(newTopLeft, newTopRight, newBottomLeft, newBottomRight);
+            Matrix<double> result = d.Multiply(AdjugateMatrix(s));
+            Matrix<double> normalized = result.Divide(result[2, 2]);
+            return new Matrix4x4(
+                (float)normalized[0, 0], (float)normalized[1, 0], 0, (float)normalized[2, 0],
+                (float)normalized[0, 1], (float)normalized[1, 1], 0, (float)normalized[2, 1],
+                0, 0, 1, 0,
+                (float)normalized[0, 2], (float)normalized[1, 2], 0, (float)normalized[2, 2]
+            );
+        }
+        private static Matrix<double> AdjugateMatrix(Matrix<double> matrix)
+        {
+            if (matrix.RowCount != 3 || matrix.ColumnCount != 3)
             {
-                Vector2 samplePoint = samplePoints[i];
-
-                // If the sample point is within bounds, sample it.
-                // Otherwise leave it at the default color value of 0,0,0,0
-                if ( samplePoint.X >= 0
-                    && samplePoint.X < image.Width
-                    && samplePoint.Y >= 0
-                    && samplePoint.Y < image.Height )
-                {
-                    sampleColors[i] = image[ (int)samplePoint.X, (int)samplePoint.Y ].ToVector4();
-                }
+                throw new ArgumentException("Must provide a 3x3 matrix.");
             }
 
-            float xAmount = point.X - (float)Math.Floor( point.X );
+            var adj = matrix.Clone();
+            adj[0, 0] = matrix[1, 1] * matrix[2, 2] - matrix[1, 2] * matrix[2, 1];
+            adj[0, 1] = matrix[0, 2] * matrix[2, 1] - matrix[0, 1] * matrix[2, 2];
+            adj[0, 2] = matrix[0, 1] * matrix[1, 2] - matrix[0, 2] * matrix[1, 1];
+            adj[1, 0] = matrix[1, 2] * matrix[2, 0] - matrix[1, 0] * matrix[2, 2];
+            adj[1, 1] = matrix[0, 0] * matrix[2, 2] - matrix[0, 2] * matrix[2, 0];
+            adj[1, 2] = matrix[0, 2] * matrix[1, 0] - matrix[0, 0] * matrix[1, 2];
+            adj[2, 0] = matrix[1, 0] * matrix[2, 1] - matrix[1, 1] * matrix[2, 0];
+            adj[2, 1] = matrix[0, 1] * matrix[2, 0] - matrix[0, 0] * matrix[2, 1];
+            adj[2, 2] = matrix[0, 0] * matrix[1, 1] - matrix[0, 1] * matrix[1, 0];
 
-            Vector4 topColor = Vector4.Lerp( sampleColors[0], sampleColors[1], xAmount );
-            Vector4 bottomColor = Vector4.Lerp( sampleColors[2], sampleColors[3], xAmount );
+            return adj;
+        }
 
-            float yAmount = point.Y - (float)Math.Floor( point.Y );
-
-            Vector4 finalValue = Vector4.Lerp( topColor, bottomColor, yAmount );
-
-            PixelColor outColor = new PixelColor( finalValue );
-
-            return outColor;
+        private static Matrix<double> MapBasisToPoints(Point p1, Point p2, Point p3, Point p4)
+        {
+            var A = Matrix<double>.Build.DenseOfArray(new double[,]
+            {
+                {p1.X, p2.X, p3.X},
+                {p1.Y, p2.Y, p3.Y},
+                {1, 1, 1}
+            });
+            var b = MathNet.Numerics.LinearAlgebra.Vector<double>.Build.Dense(new double[] { p4.X, p4.Y, 1 });
+            var aj = AdjugateMatrix(A);
+            var v = aj.Multiply(b);
+            var m = Matrix<double>.Build.DenseOfArray(new [,]
+            {
+                {v[0], 0, 0 },
+                {0, v[1], 0 },
+                {0, 0, v[2] }
+            });
+            return A.Multiply(m);
         }
     }
 
