@@ -284,6 +284,9 @@ namespace AppraisalBot
             materialSelector.TryAddItem("Costume", "Costume", 42);
             materialSelector.TryAddItem("Cases", "Cases", 10);
             materialSelector.TryAddItem("Metal", "Metal", 384);
+            materialSelector.TryAddItem("Lithographs", "Lithographs", 55);
+            materialSelector.TryAddItem("Prints", "Prints", 352);
+            materialSelector.TryAddItem("Silk", "Silk", 91);
 
             string material = materialSelector.RandomSelect(1).First().Value;
 
