@@ -446,7 +446,7 @@ namespace AppraisalBot
 
             PriceRange roundedRange = PriceRange.RoundPrices(priceRange);
 
-            return priceRange;
+            return roundedRange;
         }
 
         static int GetYear(Bitmap image, bool isOld, bool isBlackAndWhitePhoto)
