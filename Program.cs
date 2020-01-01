@@ -79,7 +79,7 @@ namespace AppraisalBot
 
     public class Program
     {
-        static string computerVisionKey = "";
+        static string computerVisionKey = null;
         public Stream awsLambdaHandler(Stream inputStream)
         {
             //Main(new string[0]);
@@ -99,6 +99,12 @@ namespace AppraisalBot
                 Console.WriteLine("Output updated.");
                 return;
             }
+            else if (args.Length != 0 && args[0] == "text-recognition-test")
+            {
+                TestTextRecognition.Run();
+                Console.WriteLine("Test completed.");
+                return;
+            }
 
             // Delete the previous output
             if (Directory.Exists("images"))
@@ -114,16 +120,6 @@ namespace AppraisalBot
                     {
                         Console.WriteLine(e.ToString());
                     }
-                }
-            }
-
-            computerVisionKey = System.Environment.GetEnvironmentVariable("computerVisionKey");
-
-            if (computerVisionKey == null)
-            {
-                using (StreamReader fs = File.OpenText("localconfig/computervisionkey.txt"))
-                {
-                    computerVisionKey = fs.ReadToEnd();
                 }
             }
 
@@ -352,7 +348,7 @@ namespace AppraisalBot
 
         static AnalysisResult AnalyzeImage(Bitmap sourceImage)
         {
-            VisionServiceClient VisionServiceClient = new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
+            VisionServiceClient VisionServiceClient = GetVisionServiceClient();
 
             using (MemoryStream memoryStream = new MemoryStream())
             {
@@ -374,8 +370,8 @@ namespace AppraisalBot
 
         static Bitmap SmartCropImage(Bitmap sourceImage)
         {
-            VisionServiceClient VisionServiceClient = new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
-
+            VisionServiceClient VisionServiceClient = GetVisionServiceClient();
+            
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 sourceImage.SaveAsPng(memoryStream);
@@ -404,7 +400,7 @@ namespace AppraisalBot
 
         static CelebrityAnalysisResult AnalyzeImageForCelebrities(Bitmap sourceImage)
         {
-            VisionServiceClient VisionServiceClient = new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
+            VisionServiceClient VisionServiceClient = GetVisionServiceClient();
 
             using (MemoryStream memoryStream = new MemoryStream())
             {
@@ -817,6 +813,24 @@ namespace AppraisalBot
         public static bool IsRunningTests()
         {
             return Assembly.GetEntryAssembly().GetName().Name.Contains("test");
+        }
+
+        public static VisionServiceClient GetVisionServiceClient()
+        {
+            if (computerVisionKey == null)
+            {
+                computerVisionKey = System.Environment.GetEnvironmentVariable("computerVisionKey");
+
+                if (computerVisionKey == null)
+                {
+                    using (StreamReader fs = File.OpenText("localconfig/computervisionkey.txt"))
+                    {
+                        computerVisionKey = fs.ReadToEnd();
+                    }
+                }
+            }
+
+            return new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
         }
     }
 }
