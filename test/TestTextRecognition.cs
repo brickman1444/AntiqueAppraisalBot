@@ -22,10 +22,13 @@ namespace AppraisalBot
 
                 Console.WriteLine("Calling VisionServiceClient.AnalyzeImageInDomainAsync()...");
 
-                // French - ro into Romania. europe?
                 // English - en into United States, 404 into year, "New" "York" into location?
 
                 Microsoft.ProjectOxford.Vision.Contract.OcrResults result = visionServiceClient.RecognizeTextAsync(memoryStream).GetAwaiter().GetResult();
+
+                string location = LanguageCodeToLocation.LookUp(result.Language);
+
+                Console.WriteLine("Location: " + location);
             }
         }
     }
