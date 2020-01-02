@@ -84,36 +84,42 @@ namespace AppraisalBot
         {
             Console.WriteLine("starting via lambda");
             Console.WriteLine("Input: " + inputStream.ToString());
-            Main(new string[0]);
+            Main(new string[] { "create-and-post-appraisal-for-lambda" });
             return inputStream;
         }
-        public static int Main(string[] args)
+        public static int Main(string[] executionArguments)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            Console.WriteLine("Beginning program. Arguments: " + string.Join(' ', args));
+            Console.WriteLine("Beginning program. Arguments: " + string.Join(' ', executionArguments));
 
-            if (args.Length == 0)
+            if (executionArguments.Length == 0)
             {
                 Console.WriteLine("Arguments need to be passed in.");
                 return 1;
             }
 
-            if (args[0] == "update-expected-acceptance-test-output")
+            if (executionArguments[0] == "update-expected-acceptance-test-output")
             {
                 UpdateExpectedAcceptanceTestOutput.Run();
             }
-            else if (args[0] == "text-recognition-test")
+            else if (executionArguments[0] == "text-recognition-test")
             {
                 TestTextRecognition.Run();
             }
-            else if (args[0] == "create-local-appraisals")
+            else if (executionArguments[0] == "create-random-local-appraisals")
+            {
+                DeletePreviousOutput();
+
+                CreateAppraisals(PostToTwitterMode.No);
+            }
+            else if (executionArguments[0] == "create-and-post-appraisal-for-lambda")
             {
                 DeletePreviousOutput();
 
                 InitializeTwitterCredentials();
 
-                CreateAppraisals();
+                CreateAppraisals(PostToTwitterMode.Yes);
             }
             else
             {
@@ -169,7 +175,13 @@ namespace AppraisalBot
             }
         }
 
-        static void CreateAppraisals()
+        enum PostToTwitterMode
+        {
+            Yes,
+            No
+        }
+
+        static void CreateAppraisals(PostToTwitterMode postToTwitterMode)
         {
             int numItems = 1;
 
@@ -249,7 +261,10 @@ namespace AppraisalBot
                         }
                     }
 
-                    TweetAppraisal(appraisal);
+                    if (postToTwitterMode == PostToTwitterMode.Yes)
+                    {
+                        TweetAppraisal(appraisal);
+                    }
                 }
 
                 objectCounter++;
