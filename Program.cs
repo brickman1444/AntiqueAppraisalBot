@@ -82,31 +82,51 @@ namespace AppraisalBot
         static string computerVisionKey = null;
         public Stream awsLambdaHandler(Stream inputStream)
         {
-            //Main(new string[0]);
             Console.WriteLine("starting via lambda");
+            Console.WriteLine("Input: " + inputStream.ToString());
             Main(new string[0]);
             return inputStream;
         }
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            Console.WriteLine("Beginning program");
+            Console.WriteLine("Beginning program. Arguments: " + string.Join(' ', args));
 
-            if (args.Length != 0 && args[0] == "update-expected-acceptance-test-output")
+            if (args.Length == 0)
+            {
+                Console.WriteLine("Arguments need to be passed in.");
+                return 1;
+            }
+
+            if (args[0] == "update-expected-acceptance-test-output")
             {
                 UpdateExpectedAcceptanceTestOutput.Run();
-                Console.WriteLine("Output updated.");
-                return;
             }
-            else if (args.Length != 0 && args[0] == "text-recognition-test")
+            else if (args[0] == "text-recognition-test")
             {
                 TestTextRecognition.Run();
-                Console.WriteLine("Test completed.");
-                return;
+            }
+            else if (args[0] == "create-local-appraisals")
+            {
+                DeletePreviousOutput();
+
+                InitializeTwitterCredentials();
+
+                CreateAppraisals();
+            }
+            else
+            {
+                Console.WriteLine("Arguments could not be matched to any handler.");
+                return 1;
             }
 
-            // Delete the previous output
+            Console.WriteLine("Ending program successfully");
+            return 0;
+        }
+
+        static void DeletePreviousOutput()
+        {
             if (Directory.Exists("images"))
             {
                 string[] filePaths = Directory.GetFiles(@"images\");
@@ -122,7 +142,10 @@ namespace AppraisalBot
                     }
                 }
             }
+        }
 
+        static void InitializeTwitterCredentials()
+        {
             string consumerKey = System.Environment.GetEnvironmentVariable("twitterConsumerKey");
             string consumerSecret = System.Environment.GetEnvironmentVariable("twitterConsumerSecret");
             string accessToken = System.Environment.GetEnvironmentVariable("twitterAccessToken");
@@ -144,7 +167,10 @@ namespace AppraisalBot
             {
                 Console.WriteLine("Twitter credentials not set.");
             }
+        }
 
+        static void CreateAppraisals()
+        {
             int numItems = 1;
 
             Console.WriteLine("Getting collection listing");
@@ -228,8 +254,6 @@ namespace AppraisalBot
 
                 objectCounter++;
             }
-
-            Console.WriteLine("Done");
         }
 
         static string GetMetSearchAPIUrl(string material)
@@ -371,7 +395,7 @@ namespace AppraisalBot
         static Bitmap SmartCropImage(Bitmap sourceImage)
         {
             VisionServiceClient VisionServiceClient = GetVisionServiceClient();
-            
+
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 sourceImage.SaveAsPng(memoryStream);
