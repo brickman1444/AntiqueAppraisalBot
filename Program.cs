@@ -83,10 +83,23 @@ namespace AppraisalBot
         {
             Console.WriteLine("starting via lambda");
 
+            string argument = "create-and-post-appraisal-for-lambda";
+
             using (StreamReader reader = new StreamReader(inputStream, System.Text.Encoding.UTF8))
             {
-                Console.WriteLine("Input: " + reader.ReadToEnd());
+                string inputString = reader.ReadToEnd();
+
+                Console.WriteLine("Input: " + inputString);
+
+                Newtonsoft.Json.Linq.JObject jsonObject = Newtonsoft.Json.Linq.JObject.Parse(inputString);
+
+                if (jsonObject.ContainsKey("argument"))
+                {
+                    argument = jsonObject.Value<string>("argument");
+                }
             }
+
+            Console.WriteLine("Argument: " + argument);
 
             Main(new string[] { "create-and-post-appraisal-for-lambda" });
             return inputStream;
