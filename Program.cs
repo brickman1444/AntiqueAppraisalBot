@@ -101,7 +101,7 @@ namespace AppraisalBot
 
             Console.WriteLine("Argument: " + argument);
 
-            Main(new string[] { "create-and-post-appraisal-for-lambda" });
+            Main(new string[] { argument });
             return inputStream;
         }
         public static int Main(string[] executionArguments)
