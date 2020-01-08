@@ -18,11 +18,6 @@ namespace AppraisalBot
                 return 0.0f;
             }
 
-            if ( analysisResult.celebrityAnalysisResult.celebrities.Count() > 0 )
-            {
-                return 1.0f;
-            }
-
             if ( analysisResult.generalAnalysisResult.IsBlackAndWhite() )
             {
                 return 0.0f;

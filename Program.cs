@@ -74,7 +74,6 @@ namespace AppraisalBot
     class AnalysisBlob
     {
         public AnalysisResult generalAnalysisResult;
-        public CelebrityAnalysisResult celebrityAnalysisResult;
     }
 
     public class Program
@@ -215,7 +214,6 @@ namespace AppraisalBot
 
                     AnalysisBlob analysisBlob = new AnalysisBlob();
                     analysisBlob.generalAnalysisResult = AnalyzeImage(image);
-                    analysisBlob.celebrityAnalysisResult = AnalyzeImageForCelebrities(image);
 
                     string tagString = "";
                     foreach (string tag in analysisBlob.generalAnalysisResult.Description.Tags)
@@ -236,16 +234,6 @@ namespace AppraisalBot
                             categoryString += category.Name + ", ";
                         }
                         Console.WriteLine("Categories: " + categoryString);
-                    }
-
-                    if (HasCelebrities(analysisBlob.celebrityAnalysisResult))
-                    {
-                        string celebrityString = "";
-                        foreach (CelebrityAnalysisResult.Celebrity celebrity in analysisBlob.celebrityAnalysisResult.celebrities)
-                        {
-                            celebrityString += celebrity.name + ", ";
-                        }
-                        Console.WriteLine("Celebrities: " + celebrityString);
                     }
 
                     Appraisal appraisal = CreateAppraisal(image, analysisBlob);
@@ -537,8 +525,6 @@ namespace AppraisalBot
             Console.WriteLine("Is Painting: " + isPainting);
             bool isPhoto = !isPainting && IsPhoto(analysisResult.generalAnalysisResult);
             Console.WriteLine("Is Photo: " + isPhoto);
-            bool hasCelebrities = HasCelebrities(analysisResult.celebrityAnalysisResult);
-            Console.WriteLine("Has Celebrities: " + hasCelebrities);
             bool isSign = SignDetection.IsSign(analysisResult);
             Console.WriteLine("Is Sign: " + isSign);
 
