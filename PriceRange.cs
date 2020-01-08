@@ -53,7 +53,7 @@ namespace AppraisalBot
 
         public static string FormatPrice(int price)
         {
-            return string.Format("{0:n0}", price);
+            return string.Format(new System.Globalization.CultureInfo("en-US"), "{0:n0}", price);
         }
     }
 }
