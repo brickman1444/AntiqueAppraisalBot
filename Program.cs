@@ -82,7 +82,12 @@ namespace AppraisalBot
         public Stream awsLambdaHandler(Stream inputStream)
         {
             Console.WriteLine("starting via lambda");
-            Console.WriteLine("Input: " + inputStream.ToString());
+
+            using (StreamReader reader = new StreamReader(inputStream, System.Text.Encoding.UTF8))
+            {
+                Console.WriteLine("Input: " + reader.ReadToEnd());
+            }
+
             Main(new string[] { "create-and-post-appraisal-for-lambda" });
             return inputStream;
         }
