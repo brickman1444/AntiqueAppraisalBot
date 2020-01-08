@@ -120,6 +120,10 @@ namespace AppraisalBot
 
                 CreateAppraisals(PostToTwitterMode.Yes);
             }
+            else if (executionArguments[0] == "test-load-every-file")
+            {
+                TestLoadEveryImage.Run();
+            }
             else
             {
                 Console.WriteLine("Arguments could not be matched to any handler.");
