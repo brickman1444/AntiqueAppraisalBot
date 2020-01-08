@@ -50,5 +50,10 @@ namespace AppraisalBot
 
             return roundedRange;
         }
+
+        public static string FormatPrice(int price)
+        {
+            return string.Format("{0:n0}", price);
+        }
     }
 }

@@ -11,7 +11,8 @@ namespace AppraisalBot
         [InlineData(53962, 81960, 53000, 81000)]
         public static void PriceRangesAreRoundedToAppealingNumbers(int inLowPrice, int inHighPrice, int expectedRoundedLowPrice, int expectedRoundedHighPrice)
         {
-            PriceRange inputRange = new PriceRange{
+            PriceRange inputRange = new PriceRange
+            {
                 lowPrice = inLowPrice,
                 highPrice = inHighPrice,
             };
@@ -24,6 +25,19 @@ namespace AppraisalBot
 
             Assert.Equal(expectedRoundedLowPrice, roundedRange.lowPrice);
             Assert.Equal(expectedRoundedHighPrice, roundedRange.highPrice);
+        }
+
+        [Theory]
+        [InlineData(3, "3")]
+        [InlineData(33, "33")]
+        [InlineData(444, "444")]
+        [InlineData(1111, "1,111")]
+        [InlineData(11000, "11,000")]
+        [InlineData(123000, "123,000")]
+        [InlineData(9876543, "9,876,543")]
+        public static void PriceStringsAreFormattedCorrectly(int price, string expectedFormattedString)
+        {
+            Assert.Equal(expectedFormattedString, PriceRange.FormatPrice(price));
         }
     }
 }

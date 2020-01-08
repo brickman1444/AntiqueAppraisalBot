@@ -748,7 +748,7 @@ namespace AppraisalBot
             PriceRange priceRange = GetPriceRange(descriptionText, confidence, expensiveMultiplier, random);
             int year = GetYear(drawnBitmap, isOld, isBlackAndWhitePhoto);
 
-            string fullCaption = descriptionText + String.Format(" (ca. {0})\n ${1:0,0}-${2:0,0}", year, priceRange.lowPrice, priceRange.highPrice);
+            string fullCaption = descriptionText + String.Format(" (ca. {0})\n ${1}-${2}", year, PriceRange.FormatPrice(priceRange.lowPrice), PriceRange.FormatPrice(priceRange.highPrice));
 
             Bitmap footerImage = LoadImage(LoadImageType.Source, "footer.png");
 
