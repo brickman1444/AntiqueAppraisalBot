@@ -838,6 +838,8 @@ namespace AppraisalBot
         {
             string directory = type == LoadImageType.Source ? "sourceArt" : "testArt";
 
+            Console.WriteLine("LoadImage: " + fileName);
+
             if (Program.IsRunningTests())
             {
                 return Image.Load<PixelColor>("../../../" + directory + "/" + fileName);
