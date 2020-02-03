@@ -27,6 +27,7 @@ namespace AppraisalBot
                 1.0f,
                 false,
                 false,
+                null,
                 TestUtils.GetDeterministicRandom());
         }
     }

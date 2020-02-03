@@ -73,6 +73,7 @@ namespace AppraisalBot
     class AnalysisBlob
     {
         public AnalysisResult generalAnalysisResult;
+        public OcrResults ocrAnalysisResult;
     }
 
     public class Program
@@ -234,6 +235,7 @@ namespace AppraisalBot
 
                     AnalysisBlob analysisBlob = new AnalysisBlob();
                     analysisBlob.generalAnalysisResult = ComputerVisionService.AnalyzeImage(image);
+                    analysisBlob.ocrAnalysisResult = ComputerVisionService.AnalyzeText(image);
 
                     string tagString = "";
                     foreach (string tag in analysisBlob.generalAnalysisResult.Description.Tags)
@@ -419,8 +421,13 @@ namespace AppraisalBot
             return roundedRange;
         }
 
-        static int GetYear(Bitmap image, bool isOld, bool isBlackAndWhitePhoto)
+        static int GetYear(Bitmap image, bool isOld, bool isBlackAndWhitePhoto, int? extractedYear)
         {
+            if (extractedYear.HasValue)
+            {
+                return extractedYear.Value;
+            }
+
             int maxYear = 1917;
             int minYear = 500;
 
@@ -474,11 +481,11 @@ namespace AppraisalBot
             Console.WriteLine("Is Photo: " + isPhoto);
             bool isSign = SignDetection.IsSign(analysisResult);
             Console.WriteLine("Is Sign: " + isSign);
+            int? extractedYear = YearExtractor.ExtractYear(analysisResult.ocrAnalysisResult);
+            Console.WriteLine("Extracted Year: " + extractedYear);
 
             Random random = new Random();
-            Bitmap composedImage = ComposeImage(sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting, isSign, random);
-
-            //string comment = Comment.Get();
+            Bitmap composedImage = ComposeImage(sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting, isSign, extractedYear, random);
 
             return new Appraisal(composedImage, descriptionText);
         }
@@ -665,7 +672,7 @@ namespace AppraisalBot
             return color;
         }
 
-        public static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier, bool isPainting, bool isSign, Random random)
+        public static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier, bool isPainting, bool isSign, int? extractedYear, Random random)
         {
             Bitmap drawnBitmap = null;
 
@@ -679,7 +686,7 @@ namespace AppraisalBot
             }
 
             PriceRange priceRange = GetPriceRange(descriptionText, confidence, expensiveMultiplier, random);
-            int year = GetYear(drawnBitmap, isOld, isBlackAndWhitePhoto);
+            int year = GetYear(drawnBitmap, isOld, isBlackAndWhitePhoto, extractedYear);
 
             string fullCaption = descriptionText + String.Format(" (ca. {0})\n ${1}-${2}", year, PriceRange.FormatPrice(priceRange.lowPrice), PriceRange.FormatPrice(priceRange.highPrice));
 
