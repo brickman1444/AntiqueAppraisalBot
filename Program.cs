@@ -76,7 +76,7 @@ namespace AppraisalBot
 
             Main(new string[] { argument });
         }
-        
+
         public static int Main(string[] executionArguments)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -268,7 +268,8 @@ namespace AppraisalBot
 
         static IEnumerable<MetObjectResponse> GetCollectionListing(int numItems)
         {
-            IEnumerable<int> randomSetOfObjectIDs = GetRandomObjectIDs(numItems);
+            Random random = new Random();
+            IEnumerable<int> randomSetOfObjectIDs = GetRandomObjectIDs(numItems, random);
 
             return randomSetOfObjectIDs.Select(objectID => GetObjectResponse(objectID));
         }
@@ -278,7 +279,7 @@ namespace AppraisalBot
             return GetWebResponse<MetObjectResponse>(GetMetObjectAPIUrl(objectID));
         }
 
-        static IEnumerable<int> GetRandomObjectIDs(int numItems)
+        static IEnumerable<int> GetRandomObjectIDs(int numItems, Random random)
         {
             BNolan.RandomSelection.Selector<string> materialSelector = new BNolan.RandomSelection.Selector<string>();
 
@@ -320,7 +321,7 @@ namespace AppraisalBot
                 throw new Exception("Not enough items meet search criteria. Requested: " + numItems + " Found: " + response.total);
             }
 
-            return RandomSubset(response.objectIDs, numItems);
+            return RandomSubset(response.objectIDs, numItems, random);
         }
 
         static T GetWebResponse<T>(string url)
@@ -456,10 +457,15 @@ namespace AppraisalBot
             int? extractedYear = YearExtractor.ExtractYear(analysisResult.ocrAnalysisResult);
             Console.WriteLine("Extracted Year: " + extractedYear);
 
-            Random random = new Random();
+            Random random = GetDeterministicRandom(sourceImage);
             Bitmap composedImage = ComposeImage(sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting, isSign, extractedYear, random);
 
             return new Appraisal(composedImage, descriptionText);
+        }
+
+        public static Random GetDeterministicRandom(Bitmap image)
+        {
+            return new Random(image.ToBase64String(SixLabors.ImageSharp.Formats.Png.PngFormat.Instance).GetHashCode());
         }
 
         static Caption GetCaption(AnalysisResult analysisResult)
@@ -720,10 +726,8 @@ namespace AppraisalBot
             }
         }
 
-        static IEnumerable<T> RandomSubset<T>(IEnumerable<T> originalList, int numberOfItemsToTake)
+        static IEnumerable<T> RandomSubset<T>(IEnumerable<T> originalList, int numberOfItemsToTake, Random rnd)
         {
-            Random rnd = new Random();
-
             if (numberOfItemsToTake > originalList.Count())
             {
                 throw new Exception("Not enough items to take subset. Requested: " + numberOfItemsToTake + " Have: " + originalList.Count());

@@ -81,10 +81,9 @@ namespace AppraisalBot
             "This item appears to be one thing, but I was able to figure out what it truly is.",
         };
 
-        public static string Get()
+        public static string Get(Random random)
         {
-            Random rnd = new Random();
-            int index = rnd.Next(0, comments.Length);
+            int index = random.Next(0, comments.Length);
             return comments[index];
         }
     }
