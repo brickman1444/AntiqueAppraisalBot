@@ -38,26 +38,6 @@ namespace AppraisalBot
         public string objectURL;
     }
 
-    public class CelebrityAnalysisResult
-    {
-        public class Celebrity
-        {
-            public class FaceRectangle
-            {
-                public int top;
-                public int left;
-                public int width;
-                public int height;
-            }
-
-            public FaceRectangle faceRectangle;
-            public string name;
-            public float confidence;
-        }
-
-        public List<Celebrity> celebrities;
-    }
-
     class Appraisal
     {
         public Bitmap image;
@@ -68,12 +48,6 @@ namespace AppraisalBot
             image = inImage;
             comment = inComment;
         }
-    }
-
-    class AnalysisBlob
-    {
-        public AnalysisResult generalAnalysisResult;
-        public OcrResults ocrAnalysisResult;
     }
 
     public class Program
@@ -233,9 +207,7 @@ namespace AppraisalBot
                         image.Save(destinationFilePath);
                     }
 
-                    AnalysisBlob analysisBlob = new AnalysisBlob();
-                    analysisBlob.generalAnalysisResult = ComputerVisionService.AnalyzeImage(image);
-                    analysisBlob.ocrAnalysisResult = ComputerVisionService.AnalyzeText(image);
+                    ComputerVisionService.AnalysisBlob analysisBlob = ComputerVisionService.GetAnalysisBlob(image);
 
                     string tagString = "";
                     foreach (string tag in analysisBlob.generalAnalysisResult.Description.Tags)
@@ -461,7 +433,7 @@ namespace AppraisalBot
             return year;
         }
 
-        static Appraisal CreateAppraisal(Bitmap sourceImage, AnalysisBlob analysisResult)
+        static Appraisal CreateAppraisal(Bitmap sourceImage, ComputerVisionService.AnalysisBlob analysisResult)
         {
             Caption caption = GetCaption(analysisResult.generalAnalysisResult);
             Console.WriteLine("Caption: " + caption.Text + " " + caption.Confidence);
@@ -548,7 +520,7 @@ namespace AppraisalBot
             && !analysisResult.IsLineDrawing();
         }
 
-        static bool HasCelebrities(CelebrityAnalysisResult celebrityResult)
+        static bool HasCelebrities(ComputerVisionService.CelebrityAnalysisResult celebrityResult)
         {
             return celebrityResult.celebrities.Count > 0;
         }

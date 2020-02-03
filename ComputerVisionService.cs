@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 using Microsoft.ProjectOxford.Vision;
 using Microsoft.ProjectOxford.Vision.Contract;
@@ -11,6 +12,32 @@ namespace AppraisalBot
 {
     public static class ComputerVisionService
     {
+        public class CelebrityAnalysisResult
+        {
+            public class Celebrity
+            {
+                public class FaceRectangle
+                {
+                    public int top;
+                    public int left;
+                    public int width;
+                    public int height;
+                }
+
+                public FaceRectangle faceRectangle;
+                public string name;
+                public float confidence;
+            }
+
+            public List<Celebrity> celebrities;
+        }
+
+        public class AnalysisBlob
+        {
+            public AnalysisResult generalAnalysisResult;
+            public OcrResults ocrAnalysisResult;
+        }
+
         private static string computerVisionKey = null;
         private static VisionServiceClient GetClient()
         {
@@ -28,6 +55,14 @@ namespace AppraisalBot
             }
 
             return new VisionServiceClient(computerVisionKey, "https://westcentralus.api.cognitive.microsoft.com/vision/v1.0");
+        }
+
+        public static AnalysisBlob GetAnalysisBlob(Bitmap image)
+        {
+            AnalysisBlob analysisBlob = new AnalysisBlob();
+            analysisBlob.generalAnalysisResult = ComputerVisionService.AnalyzeImage(image);
+            analysisBlob.ocrAnalysisResult = ComputerVisionService.AnalyzeText(image);
+            return analysisBlob;
         }
 
         public static CelebrityAnalysisResult AnalyzeImageForCelebrities(Bitmap sourceImage)

@@ -5,12 +5,12 @@ namespace AppraisalBot
 {
     static class PaintingDetection
     {
-        public static bool IsPainting(AnalysisBlob analysisResult)
+        public static bool IsPainting(ComputerVisionService.AnalysisBlob analysisResult)
         {
             return GetPaintingConfidence(analysisResult) >= 0.5f;
         }
 
-        public static float GetPaintingConfidence(AnalysisBlob analysisResult)
+        public static float GetPaintingConfidence(ComputerVisionService.AnalysisBlob analysisResult)
         {
             if ( analysisResult.generalAnalysisResult.IsClipArt()
             || analysisResult.generalAnalysisResult.IsLineDrawing() )

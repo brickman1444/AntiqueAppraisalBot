@@ -5,12 +5,12 @@ namespace AppraisalBot
 {
     static class SignDetection
     {
-        public static bool IsSign(AnalysisBlob analysisResult)
+        public static bool IsSign(ComputerVisionService.AnalysisBlob analysisResult)
         {
             return GetSignConfidence(analysisResult) >= 0.5f;
         }
 
-        public static float GetSignConfidence(AnalysisBlob analysisResult)
+        public static float GetSignConfidence(ComputerVisionService.AnalysisBlob analysisResult)
         {
             float cumulativeConfidence = 0.0f;
 
