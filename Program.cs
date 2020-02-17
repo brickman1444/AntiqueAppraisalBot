@@ -93,10 +93,6 @@ namespace AppraisalBot
             {
                 UpdateExpectedAcceptanceTestOutput.Run();
             }
-            else if (executionArguments[0] == "text-recognition-test")
-            {
-                TestTextRecognition.Run();
-            }
             else if (executionArguments[0] == "create-random-local-appraisals")
             {
                 DeletePreviousOutput();
