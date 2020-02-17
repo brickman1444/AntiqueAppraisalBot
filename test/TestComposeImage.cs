@@ -27,7 +27,8 @@ namespace AppraisalBot
                 1.0f,
                 false,
                 false,
-                null,
+                9876,
+                "Neverland",
                 TestUtils.GetDeterministicRandom());
         }
     }

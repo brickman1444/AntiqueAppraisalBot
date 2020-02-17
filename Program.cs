@@ -452,9 +452,11 @@ namespace AppraisalBot
             Console.WriteLine("Is Sign: " + isSign);
             int? extractedYear = YearExtractor.ExtractYear(analysisResult.ocrAnalysisResult);
             Console.WriteLine("Extracted Year: " + extractedYear);
+            string extractedLocale = LanguageCodeToLocation.LookUp(analysisResult.ocrAnalysisResult);
+            Console.WriteLine("Extracted Locale: " + extractedLocale);
 
             Random random = GetDeterministicRandom(sourceImage);
-            Bitmap composedImage = ComposeImage(sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting, isSign, extractedYear, random);
+            Bitmap composedImage = ComposeImage(sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting, isSign, extractedYear, extractedLocale, random);
 
             return new Appraisal(composedImage, descriptionText);
         }
@@ -646,7 +648,7 @@ namespace AppraisalBot
             return color;
         }
 
-        public static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier, bool isPainting, bool isSign, int? extractedYear, Random random)
+        public static Bitmap ComposeImage(Bitmap sourceImage, string descriptionText, float confidence, bool isOld, bool isBlackAndWhitePhoto, float expensiveMultiplier, bool isPainting, bool isSign, int? extractedYear, string extractedLocale, Random random)
         {
             Bitmap drawnBitmap = null;
 
@@ -662,7 +664,9 @@ namespace AppraisalBot
             PriceRange priceRange = GetPriceRange(descriptionText, confidence, expensiveMultiplier, random);
             int year = GetYear(drawnBitmap, isOld, isBlackAndWhitePhoto, extractedYear);
 
-            string fullCaption = descriptionText + String.Format(" (ca. {0})\n ${1}-${2}", year, PriceRange.FormatPrice(priceRange.lowPrice), PriceRange.FormatPrice(priceRange.highPrice));
+            string localePhrase = ( extractedLocale != null ? (", " + extractedLocale ) : "" );
+
+            string fullCaption = descriptionText + String.Format(" (ca. {0}{1})\n ${2}-${3}", year, localePhrase, PriceRange.FormatPrice(priceRange.lowPrice), PriceRange.FormatPrice(priceRange.highPrice));
 
             Bitmap footerImage = LoadImage(LoadImageType.Source, "footer.png");
 
