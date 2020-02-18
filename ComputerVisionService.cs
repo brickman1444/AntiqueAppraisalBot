@@ -118,8 +118,18 @@ namespace AppraisalBot
                     VisualFeature.ImageType
                 };
 
-                AnalysisResult analysisResult = VisionServiceClient.AnalyzeImageAsync(memoryStream, visualFeatures).GetAwaiter().GetResult();
-                return analysisResult;
+                try
+                {
+                    AnalysisResult analysisResult = VisionServiceClient.AnalyzeImageAsync(memoryStream, visualFeatures).GetAwaiter().GetResult();
+                    return analysisResult;
+                }
+                catch (Microsoft.ProjectOxford.Vision.ClientException exception)
+                {
+                    Console.WriteLine(exception.Error.Message);
+                    Console.WriteLine(exception.Error.Code);
+                    
+                    throw exception;
+                }
             }
         }
 

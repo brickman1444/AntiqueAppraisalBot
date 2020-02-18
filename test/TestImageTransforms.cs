@@ -42,5 +42,19 @@ namespace AppraisalBot
 
             TestUtils.AssertImagesAreTheSame(expectedImage, actualImage);
         }
+
+        [Theory]
+        [InlineData("veryTallImage.jpg")]
+        [InlineData("veryWideImage.jpg")]
+        public static void ResizeImageToWithinAnalysisLimitsTest(string filename)
+        {
+            Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, filename);
+
+            Assert.False(ImageTransforms.IsWithinAnalysisLimits(sourceImage));
+
+            Bitmap resizedImage = ImageTransforms.ResizeToWithinAnalysisLimits(sourceImage);
+
+            Assert.True(ImageTransforms.IsWithinAnalysisLimits(resizedImage));
+        }
     }
 }

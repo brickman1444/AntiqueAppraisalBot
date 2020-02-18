@@ -186,24 +186,28 @@ namespace AppraisalBot
             {
                 Console.WriteLine("-----------------------------------------------------------------------");
 
-                string imageUrl = responseObject.primaryImageSmall;
+                string imageUrl = responseObject.primaryImage;
                 Console.WriteLine("image url: " + imageUrl);
 
                 string fullListingURL = responseObject.objectURL;
                 Console.WriteLine("Listing page: " + fullListingURL);
 
-                Bitmap image = DownloadImage(imageUrl);
+                Bitmap originalImage = DownloadImage(imageUrl);
 
-                bool doAnalysis = true;
-                if (image != null && doAnalysis)
+                if (originalImage != null)
                 {
+                    Bitmap resizedImage = ImageTransforms.ResizeToWithinAnalysisLimits(originalImage);
+
                     if (Directory.Exists("images"))
                     {
-                        string destinationFilePath = @"images/sourceImage" + objectCounter + ".jpg";
-                        image.Save(destinationFilePath);
+                        string originalDestinationFilePath = @"images/sourceImage" + objectCounter + ".jpg";
+                        originalImage.Save(originalDestinationFilePath);
+
+                        string resizedDestinationFilePath = @"images/resizedImage" + objectCounter + ".jpg";
+                        resizedImage.Save(resizedDestinationFilePath);
                     }
 
-                    ComputerVisionService.AnalysisBlob analysisBlob = ComputerVisionService.GetAnalysisBlob(image);
+                    ComputerVisionService.AnalysisBlob analysisBlob = ComputerVisionService.GetAnalysisBlob(resizedImage);
 
                     string tagString = "";
                     foreach (string tag in analysisBlob.generalAnalysisResult.Description.Tags)
@@ -226,7 +230,7 @@ namespace AppraisalBot
                         Console.WriteLine("Categories: " + categoryString);
                     }
 
-                    Appraisal appraisal = CreateAppraisal(image, analysisBlob);
+                    Appraisal appraisal = CreateAppraisal(originalImage, analysisBlob);
 
                     if (Directory.Exists("images"))
                     {

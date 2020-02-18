@@ -147,6 +147,31 @@ namespace AppraisalBot
             });
             return A.Multiply(m);
         }
+
+        private static readonly int maxImageDimension = 1300;
+
+        public static bool IsWithinAnalysisLimits(Bitmap image)
+        {
+            return image.Width <= maxImageDimension && image.Height <= maxImageDimension;
+        }
+
+        public static Bitmap ResizeToWithinAnalysisLimits(Bitmap originalImage)
+        {
+            if (IsWithinAnalysisLimits(originalImage))
+            {
+                return originalImage;
+            }
+
+            Bitmap scaledImage = originalImage.Clone();
+
+            float scale = (float)maxImageDimension / Math.Max(originalImage.Width, originalImage.Height);
+
+            AffineTransformBuilder footerTransformBuilder = new AffineTransformBuilder().AppendScale(scale);
+
+            scaledImage.Mutate(x => x.Transform(footerTransformBuilder));
+
+            return scaledImage;
+        }
     }
 
 }
