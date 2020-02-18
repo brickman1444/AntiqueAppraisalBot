@@ -26,7 +26,7 @@ namespace AppraisalBot
                 case "el": return "Greece"; //(Greek)
                 case "hu": return "Hungary"; //(Hungarian)
                 case "it": return "Italy"; //(Italian)
-                case "ja": return "Japanese"; //(Japanese)
+                case "ja": return "Japan"; //(Japanese)
                 case "ko": return "Korea"; //(Korean)
                 case "nb": return "Norway"; //(Norwegian)
                 case "pl": return "Poland"; //(Polish)
