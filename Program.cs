@@ -217,7 +217,7 @@ namespace AppraisalBot
                     }
                     Console.WriteLine("Tags: " + tagString);
 
-                    string accentColor = ColorTable.GetClosestColorName(ColorTable.GetColorFromHexString(analysisBlob.generalAnalysisResult.Color.AccentColor));
+                    string accentColor = ColorTable.GetClosestColorName(analysisBlob.generalAnalysisResult.Color.AccentColor);
 
                     Console.WriteLine("Foreground: " + analysisBlob.generalAnalysisResult.Color.DominantColorForeground + " Background: " + analysisBlob.generalAnalysisResult.Color.DominantColorBackground + " Accent: " + accentColor);
 
@@ -643,7 +643,7 @@ namespace AppraisalBot
             string color = "";
             if (analysisResult.Color.DominantColorBackground == analysisResult.Color.DominantColorForeground)
             {
-                color = ColorTable.GetClosestColorName(ColorTable.GetColorFromHexString(analysisResult.Color.AccentColor));
+                color = ColorTable.GetClosestColorName(analysisResult.Color.AccentColor);
             }
             else
             {

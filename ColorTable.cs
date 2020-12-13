@@ -7,6 +7,11 @@ namespace AppraisalBot
 {
     static class ColorTable
     {
+        public static string GetClosestColorName( string hexString )
+        {
+            return ColorTable.GetClosestColorName(ColorTable.GetColorFromHexString(hexString));
+        }
+
         struct ColorData
         {
             
@@ -43,14 +48,14 @@ namespace AppraisalBot
             new ColorData( Color.Pink, "pink" ),
         };
 
-        public static Rgba32 GetColorFromHexString( string hexString )
+        static Rgba32 GetColorFromHexString( string hexString )
         {
             Rgba32 outColor = new Rgba32();
             SixLabors.ImageSharp.PixelFormats.RgbaVector.FromHex( hexString ).ToRgba32(ref outColor);
             return outColor;
         }
 
-        public static string GetClosestColorName( Rgba32 color )
+        static string GetClosestColorName( Rgba32 color )
         {
             double closestSquaredDistance = SquaredColorDistance( color, table[0].color );
             ColorData closestColor = table[0];
