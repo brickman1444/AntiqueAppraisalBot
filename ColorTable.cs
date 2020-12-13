@@ -1,6 +1,7 @@
 using System;
 
 using Rgba32 = SixLabors.ImageSharp.PixelFormats.Rgba32;
+using Color = SixLabors.ImageSharp.Color;
 
 namespace AppraisalBot
 {
@@ -20,31 +21,33 @@ namespace AppraisalBot
         }
 
         static ColorData[] table = {
-            new ColorData( Rgba32.Red, "red" ),
-            new ColorData( Rgba32.Blue, "blue" ),
-            new ColorData( Rgba32.Green, "green" ),
+            new ColorData( Color.Red, "red" ),
+            new ColorData( Color.Blue, "blue" ),
+            new ColorData( Color.Green, "green" ),
 
-            new ColorData( Rgba32.Cyan, "cyan" ),
-            new ColorData( Rgba32.Magenta, "magenta" ),
-            new ColorData( Rgba32.Yellow, "yellow" ),
+            new ColorData( Color.Cyan, "cyan" ),
+            new ColorData( Color.Magenta, "magenta" ),
+            new ColorData( Color.Yellow, "yellow" ),
 
-            new ColorData( Rgba32.Black, "black" ),
-            new ColorData( Rgba32.DimGray, "dark gray" ),
-            new ColorData( Rgba32.Gray, "gray" ),
-            new ColorData( Rgba32.LightGray, "light gray" ),
-            new ColorData( Rgba32.White, "white" ),
+            new ColorData( Color.Black, "black" ),
+            new ColorData( Color.DimGray, "dark gray" ),
+            new ColorData( Color.Gray, "gray" ),
+            new ColorData( Color.LightGray, "light gray" ),
+            new ColorData( Color.White, "white" ),
 
-            new ColorData( Rgba32.Orange, "orange" ),
-            new ColorData( Rgba32.SaddleBrown, "brown" ),
-            new ColorData( Rgba32.Sienna, "light brown" ),
-            new ColorData( Rgba32.Tan, "tan" ),
-            new ColorData( Rgba32.Purple, "purple" ),
-            new ColorData( Rgba32.Pink, "pink" ),
+            new ColorData( Color.Orange, "orange" ),
+            new ColorData( Color.SaddleBrown, "brown" ),
+            new ColorData( Color.Sienna, "light brown" ),
+            new ColorData( Color.Tan, "tan" ),
+            new ColorData( Color.Purple, "purple" ),
+            new ColorData( Color.Pink, "pink" ),
         };
 
         public static Rgba32 GetColorFromHexString( string hexString )
         {
-            return Rgba32.FromHex( hexString );
+            Rgba32 outColor = new Rgba32();
+            SixLabors.ImageSharp.PixelFormats.RgbaVector.FromHex( hexString ).ToRgba32(ref outColor);
+            return outColor;
         }
 
         public static string GetClosestColorName( Rgba32 color )

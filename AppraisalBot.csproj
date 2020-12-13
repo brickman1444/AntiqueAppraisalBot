@@ -9,8 +9,8 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="Microsoft.ProjectOxford.Vision.DotNetCore" Version="1.1.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
     <PackageReference Include="TweetinviAPI" Version="4.0.3" />
     <PackageReference Include="AWSSDK.Lambda" Version="3.3.106.11" />
     <PackageReference Include="Amazon.Lambda.Tools" Version="2.1.2" />

@@ -23,10 +23,10 @@ namespace AppraisalBot
             ImageTransforms.PerspectiveTransform(
                 sourceImage,
                 copiedSourceImage,
-                new SixLabors.Primitives.Point(10, 10),
-                new SixLabors.Primitives.Point(250, 50),
-                new SixLabors.Primitives.Point(30, 500),
-                new SixLabors.Primitives.Point(400, 300));
+                new SixLabors.ImageSharp.Point(10, 10),
+                new SixLabors.ImageSharp.Point(250, 50),
+                new SixLabors.ImageSharp.Point(30, 500),
+                new SixLabors.ImageSharp.Point(400, 300));
             return copiedSourceImage;
         }
     }

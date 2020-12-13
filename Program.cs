@@ -12,10 +12,11 @@ using Microsoft.ProjectOxford.Vision.Contract;
 
 using SixLabors.ImageSharp;
 using SixLabors.Fonts;
-using SixLabors.Primitives;
 using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Drawing.Processing;
 
 using PixelColor = SixLabors.ImageSharp.PixelFormats.Rgba32;
+using NamedColors = SixLabors.ImageSharp.Color;
 using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>;
 
 namespace AppraisalBot
@@ -695,18 +696,19 @@ namespace AppraisalBot
             // }
 
             FontFamily family = SystemFonts.Find("DejaVu Sans"); //assumes arial has been installed
+            
             Font font = new Font(family, fontSize, FontStyle.Bold);
 
             TextGraphicsOptions textGraphicsOptions = new TextGraphicsOptions();
-            textGraphicsOptions.WrapTextWidth = drawnBitmap.Width - textOriginX - 10;
+            textGraphicsOptions.TextOptions.WrapTextWidth = drawnBitmap.Width - textOriginX - 10;
 
             AffineTransformBuilder footerTransformBuilder = new AffineTransformBuilder()
                     .AppendScale(new SizeF(scale, scale));
 
             footerImage.Mutate(x => x.Transform(footerTransformBuilder));
 
-            drawnBitmap.Mutate(x => x.DrawImage(footerImage, new SixLabors.Primitives.Point(0, (int)footerOriginY), new GraphicsOptions())
-           .DrawText(textGraphicsOptions, fullCaption, font, PixelColor.White, new PointF(textOriginX + 1, textOriginY + 1)));
+            drawnBitmap.Mutate(x => x.DrawImage(footerImage, new SixLabors.ImageSharp.Point(0, (int)footerOriginY), new GraphicsOptions())
+           .DrawText(textGraphicsOptions, fullCaption, font, NamedColors.White, new PointF(textOriginX + 1, textOriginY + 1)));
 
             return drawnBitmap;
         }
