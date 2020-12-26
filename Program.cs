@@ -21,12 +21,6 @@ namespace AppraisalBot
     {
         public Bitmap image;
         public string comment;
-
-        public Appraisal(Bitmap inImage, string inComment)
-        {
-            image = inImage;
-            comment = inComment;
-        }
     }
 
     public class Program
@@ -210,6 +204,7 @@ namespace AppraisalBot
                     }
 
                     Appraisal appraisal = CreateAppraisal(originalImage, analysisBlob);
+                    string tweetableText = GetTweetableText(appraisal.comment, responseObject.listingURL, responseObject.artSourceHashTag);
 
                     if (Directory.Exists("images"))
                     {
@@ -218,18 +213,23 @@ namespace AppraisalBot
 
                         using (StreamWriter file = File.CreateText(@"images/comment" + objectCounter + ".txt"))
                         {
-                            file.WriteLine(appraisal.comment);
+                            file.WriteLine(tweetableText);
                         }
                     }
 
                     if (postToTwitterMode == PostToTwitterMode.Yes)
                     {
-                        TweetAppraisal(appraisal);
+                        TweetAppraisal(appraisal.image, tweetableText);
                     }
                 }
 
                 objectCounter++;
             }
+        }
+
+        static string GetTweetableText(string description, string artListingURL, string artSourceHashTag)
+        {
+            return description + " " + artListingURL + " " + artSourceHashTag; // At least Harvard Art Museums requires linking back to where the art is from and it's good practice to do overall.
         }
 
         static PriceRange GetPriceRange(string caption, double confidence, float expensiveMultiplier, Random rnd)
@@ -333,7 +333,7 @@ namespace AppraisalBot
             Random random = GetDeterministicRandom(sourceImage);
             Bitmap composedImage = ComposeImage(sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting, isSign, extractedYear, extractedLocale, random);
 
-            return new Appraisal(composedImage, descriptionText);
+            return new Appraisal{image = composedImage, comment = descriptionText};
         }
 
         public static Random GetDeterministicRandom(Bitmap image)
@@ -513,18 +513,19 @@ namespace AppraisalBot
             return drawnBitmap;
         }
 
-        static void TweetAppraisal(Appraisal appraisal)
+        static void TweetAppraisal(Bitmap image, string text)
         {
             using (MemoryStream memoryStream = new MemoryStream())
             {
-                appraisal.image.SaveAsPng(memoryStream);
+                image.SaveAsPng(memoryStream);
                 byte[] bytes = memoryStream.ToArray();
 
                 Console.WriteLine("Uploading image to twitter");
                 Tweetinvi.Models.IMedia media = Tweetinvi.Upload.UploadBinary(new Tweetinvi.Parameters.UploadParameters { Binary = bytes });
 
                 Console.WriteLine("Publishing tweet");
-                Tweetinvi.Models.ITweet tweet = Tweetinvi.Tweet.PublishTweet(appraisal.comment, new Tweetinvi.Parameters.PublishTweetOptionalParameters
+
+                Tweetinvi.Models.ITweet tweet = Tweetinvi.Tweet.PublishTweet(text, new Tweetinvi.Parameters.PublishTweetOptionalParameters
                 {
                     Medias = new List<Tweetinvi.Models.IMedia> { media }
                 });

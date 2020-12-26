@@ -8,6 +8,7 @@ namespace AppraisalBot
         {
             public string imageURL;
             public string listingURL;
+            public string artSourceHashTag;
         }
 
         public static IEnumerable<Object> GetRandomObjects(int numObjects)

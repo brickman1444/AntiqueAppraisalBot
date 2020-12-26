@@ -93,7 +93,7 @@ namespace AppraisalBot
 
             SearchResult.Record randomRecord = randomPageResult.records[randomRecordIndex];
 
-            return new Art.Object { imageURL = randomRecord.primaryimageurl, listingURL = randomRecord.url };
+            return new Art.Object { imageURL = randomRecord.primaryimageurl, listingURL = randomRecord.url, artSourceHashTag = "#harvardartmuseums" };
         }
     }
 }

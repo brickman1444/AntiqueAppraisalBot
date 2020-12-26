@@ -30,7 +30,7 @@ namespace AppraisalBot
 
             return randomSetOfObjectIDs
             .Select(objectID => GetObjectResponse(objectID))
-            .Select(metResponse => new Art.Object{imageURL = metResponse.primaryImage, listingURL = metResponse.objectURL});
+            .Select(metResponse => new Art.Object{imageURL = metResponse.primaryImage, listingURL = metResponse.objectURL, artSourceHashTag = "#metmuseum"});
         }
 
         static IEnumerable<int> GetRandomObjectIDs(int numItems, System.Random random)
