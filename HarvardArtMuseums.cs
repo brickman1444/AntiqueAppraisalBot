@@ -64,8 +64,8 @@ namespace AppraisalBot
             classificationSelector.TryAddItem("Tools+and+Equipment", "Tools+and+Equipment", 300); // 637
             classificationSelector.TryAddItem("Ritual+Implements", "Ritual+Implements", 200); // 902
             classificationSelector.TryAddItem("Textile+Arts", "Textile+Arts", 200); // 1833
-            classificationSelector.TryAddItem("Sculpture", "Sculpture", 300); // 4549
-            classificationSelector.TryAddItem("Vessels", "Vessels", 150); // 5021
+            classificationSelector.TryAddItem("Sculpture", "Sculpture", 200); // 4549
+            classificationSelector.TryAddItem("Vessels", "Vessels", 100); // 5021
 
             return classificationSelector.RandomSelect(1).First().Value;
         }

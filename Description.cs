@@ -56,6 +56,7 @@ namespace AppraisalBot
                 "A envelope",
                 "A pot",
                 "A book",
+                "A phone",
             };
 
             bool isSimple = commonSimpleDescriptions.Contains(descriptionText);
