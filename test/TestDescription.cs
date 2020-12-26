@@ -13,6 +13,7 @@ namespace AppraisalBot
         static Caption AVeryComplicatedBook = new Caption{Text = "A very complicated book",};
         static Caption AVeryComplicatedVase = new Caption{Text = "A very complicated vase",};
         static Caption AnOldPhotoOfAPerson = new Caption{Text = "An old photo of a person",};
+        static Caption APersonSittingOnABook = new Caption{Text = "A person sitting on a book",};
         static Caption AGroupOfPeoplePosingForTheCamera = new Caption{Text = "A group of people posing for the camera",};
         static Caption AGroupOfPeoplePosingForAPhotoInFrontOfAWindow = new Caption{Text = "A group of people posing for a photo in front of a window",};
 
@@ -77,6 +78,7 @@ namespace AppraisalBot
             new object[]{APerson, RedPrint, "A print of a person" },
             new object[]{AGroupOfPeoplePosingForTheCamera, RedPhoto, "A photo of a group of people posing for the camera" },
             new object[]{AGroupOfPeoplePosingForAPhotoInFrontOfAWindow, RedPhoto, "A photo of a group of people posing for a photo in front of a window" },
+            new object[]{APersonSittingOnABook, BluePainting, "A painting of a person sitting on a book" },
         };
 
         [Theory]

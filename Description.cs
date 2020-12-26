@@ -85,7 +85,7 @@ namespace AppraisalBot
                 }
             }
 
-            if (descriptionText == "A person" || descriptionText.StartsWith("A group of people"))
+            if (descriptionText.StartsWith("A person") || descriptionText.StartsWith("A group of people"))
             {
                 if (arguments.isPainting)
                 {
