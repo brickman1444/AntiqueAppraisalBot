@@ -30,7 +30,7 @@ namespace AppraisalBot
 
             return randomSetOfObjectIDs
             .Select(objectID => GetObjectResponse(objectID))
-            .Select(metResponse => new Art.Object{imageURL = metResponse.primaryImage, listingURL = metResponse.objectURL, artSourceHashTag = "#metmuseum"});
+            .Select(metResponse => new Art.Object { imageURL = metResponse.primaryImage, listingURL = metResponse.objectURL, artSourceHashTag = "#metmuseum" });
         }
 
         static IEnumerable<int> GetRandomObjectIDs(int numItems, System.Random random)
@@ -90,7 +90,7 @@ namespace AppraisalBot
         {
             return Web.GetWebResponse<MetObjectResponse>(GetMetObjectAPIUrl(objectID));
         }
-        
+
         static string GetMetObjectAPIUrl(int objectID)
         {
             return "https://collectionapi.metmuseum.org/public/collection/v1/objects/" + objectID;

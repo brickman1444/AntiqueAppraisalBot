@@ -7,18 +7,18 @@ namespace AppraisalBot
 {
     static class ColorTable
     {
-        public static string GetClosestColorName( string hexString )
+        public static string GetClosestColorName(string hexString)
         {
             return ColorTable.GetClosestColorName(ColorTable.GetColorFromHexString(hexString));
         }
 
         struct ColorData
         {
-            
+
             public readonly Rgba32 color;
             public readonly string name;
 
-            public ColorData( Rgba32 inColor, string inName )
+            public ColorData(Rgba32 inColor, string inName)
             {
                 color = inColor;
                 name = inName;
@@ -48,23 +48,23 @@ namespace AppraisalBot
             new ColorData( Color.Pink, "pink" ),
         };
 
-        static Rgba32 GetColorFromHexString( string hexString )
+        static Rgba32 GetColorFromHexString(string hexString)
         {
             Rgba32 outColor = new Rgba32();
-            SixLabors.ImageSharp.PixelFormats.RgbaVector.FromHex( hexString ).ToRgba32(ref outColor);
+            SixLabors.ImageSharp.PixelFormats.RgbaVector.FromHex(hexString).ToRgba32(ref outColor);
             return outColor;
         }
 
-        static string GetClosestColorName( Rgba32 color )
+        static string GetClosestColorName(Rgba32 color)
         {
-            double closestSquaredDistance = SquaredColorDistance( color, table[0].color );
+            double closestSquaredDistance = SquaredColorDistance(color, table[0].color);
             ColorData closestColor = table[0];
 
-            foreach ( ColorData data in table )
+            foreach (ColorData data in table)
             {
-                double squaredDistance = SquaredColorDistance( color, data.color );
-                
-                if ( squaredDistance < closestSquaredDistance )
+                double squaredDistance = SquaredColorDistance(color, data.color);
+
+                if (squaredDistance < closestSquaredDistance)
                 {
                     closestSquaredDistance = squaredDistance;
                     closestColor = data;
@@ -74,9 +74,9 @@ namespace AppraisalBot
             return closestColor.name;
         }
 
-        static double SquaredColorDistance( Rgba32 color1, Rgba32 color2 )
+        static double SquaredColorDistance(Rgba32 color1, Rgba32 color2)
         {
-            return System.Numerics.Vector4.DistanceSquared( color1.ToVector4(), color2.ToVector4() );
+            return System.Numerics.Vector4.DistanceSquared(color1.ToVector4(), color2.ToVector4());
         }
     }
 

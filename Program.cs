@@ -311,7 +311,8 @@ namespace AppraisalBot
             bool isBlackAndWhite = IsBlackAndWhite(analysisResult.generalAnalysisResult);
             Console.WriteLine("Is Black and White: " + isBlackAndWhite);
 
-            Description.Arguments descriptionArguments = new Description.Arguments{
+            Description.Arguments descriptionArguments = new Description.Arguments
+            {
                 foregroundColor = foregroundColor,
                 isOld = isOld,
                 isBlackAndWhite = isBlackAndWhite,
@@ -333,7 +334,7 @@ namespace AppraisalBot
             Random random = GetDeterministicRandom(sourceImage);
             Bitmap composedImage = ComposeImage(sourceImage, descriptionText, confidence, isOld, isBlackAndWhite && isPhoto, expensiveMultiplier, isPainting, isSign, extractedYear, extractedLocale, random);
 
-            return new Appraisal{image = composedImage, comment = descriptionText};
+            return new Appraisal { image = composedImage, comment = descriptionText };
         }
 
         public static Random GetDeterministicRandom(Bitmap image)
@@ -469,7 +470,7 @@ namespace AppraisalBot
             PriceRange priceRange = GetPriceRange(descriptionText, confidence, expensiveMultiplier, random);
             int year = GetYear(drawnBitmap, isOld, isBlackAndWhitePhoto, extractedYear);
 
-            string localePhrase = ( extractedLocale != null ? (", " + extractedLocale ) : "" );
+            string localePhrase = (extractedLocale != null ? (", " + extractedLocale) : "");
 
             string fullCaption = descriptionText + String.Format(" (ca. {0}{1})\n ${2}-${3}", year, localePhrase, PriceRange.FormatPrice(priceRange.lowPrice), PriceRange.FormatPrice(priceRange.highPrice));
 
@@ -496,7 +497,7 @@ namespace AppraisalBot
             // }
 
             FontFamily family = SystemFonts.Find("DejaVu Sans"); //assumes arial has been installed
-            
+
             Font font = new Font(family, fontSize, FontStyle.Bold);
 
             TextGraphicsOptions textGraphicsOptions = new TextGraphicsOptions();

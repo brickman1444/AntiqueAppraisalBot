@@ -7,30 +7,30 @@ namespace AppraisalBot
 {
     public static class TestDescription
     {
-        static Caption ABook = new Caption{Text = "A book",};
-        static Caption AVase = new Caption{Text = "A vase",};
-        static Caption APerson = new Caption{Text = "A person",};
-        static Caption AVeryComplicatedBook = new Caption{Text = "A very complicated book",};
-        static Caption AVeryComplicatedVase = new Caption{Text = "A very complicated vase",};
-        static Caption AnOldPhotoOfAPerson = new Caption{Text = "An old photo of a person",};
-        static Caption APersonSittingOnABook = new Caption{Text = "A person sitting on a book",};
-        static Caption AGroupOfPeoplePosingForTheCamera = new Caption{Text = "A group of people posing for the camera",};
-        static Caption AGroupOfPeoplePosingForAPhotoInFrontOfAWindow = new Caption{Text = "A group of people posing for a photo in front of a window",};
-        static Caption AManStandingNextToAVase = new Caption{Text = "A man standing next to a vase"};
-        static Caption AGroupOfStuffedAnimalsSittingNextToAWoman = new Caption{Text = "A group of stuffed animals sitting next to a woman"};
-        static Caption AWomanStandingInFrontOfAWindow = new Caption{Text = "A woman standing in front of a window"};
+        static Caption ABook = new Caption { Text = "A book" };
+        static Caption AVase = new Caption { Text = "A vase" };
+        static Caption APerson = new Caption { Text = "A person", };
+        static Caption AVeryComplicatedBook = new Caption { Text = "A very complicated book" };
+        static Caption AVeryComplicatedVase = new Caption { Text = "A very complicated vase" };
+        static Caption AnOldPhotoOfAPerson = new Caption { Text = "An old photo of a person" };
+        static Caption APersonSittingOnABook = new Caption { Text = "A person sitting on a book" };
+        static Caption AGroupOfPeoplePosingForTheCamera = new Caption { Text = "A group of people posing for the camera" };
+        static Caption AGroupOfPeoplePosingForAPhotoInFrontOfAWindow = new Caption { Text = "A group of people posing for a photo in front of a window" };
+        static Caption AManStandingNextToAVase = new Caption { Text = "A man standing next to a vase" };
+        static Caption AGroupOfStuffedAnimalsSittingNextToAWoman = new Caption { Text = "A group of stuffed animals sitting next to a woman" };
+        static Caption AWomanStandingInFrontOfAWindow = new Caption { Text = "A woman standing in front of a window" };
 
-        static Description.Arguments Blue = new Description.Arguments{foregroundColor = "blue"};
-        static Description.Arguments BlueBlackAndWhite = new Description.Arguments{foregroundColor = "blue", isBlackAndWhite = true};
-        static Description.Arguments BlueOldBlackAndWhite = new Description.Arguments{foregroundColor = "blue", isOld = true, isBlackAndWhite = true};
-        static Description.Arguments BluePainting = new Description.Arguments{foregroundColor = "blue", isPainting = true};
-        
-        static Description.Arguments Red = new Description.Arguments{foregroundColor = "red"};
-        static Description.Arguments RedOld = new Description.Arguments{foregroundColor = "red", isOld = true};
-        static Description.Arguments RedOldBlackAndWhite = new Description.Arguments{foregroundColor = "red", isOld = true, isBlackAndWhite = true};
-        static Description.Arguments RedPhoto = new Description.Arguments{foregroundColor = "red", isPhoto = true};
-        static Description.Arguments RedPrint = new Description.Arguments{foregroundColor = "red", isSign = true};
-        static Description.Arguments RedOldPhoto = new Description.Arguments{foregroundColor = "red", isOld = true, isPhoto = true};
+        static Description.Arguments Blue = new Description.Arguments { foregroundColor = "blue" };
+        static Description.Arguments BlueBlackAndWhite = new Description.Arguments { foregroundColor = "blue", isBlackAndWhite = true };
+        static Description.Arguments BlueOldBlackAndWhite = new Description.Arguments { foregroundColor = "blue", isOld = true, isBlackAndWhite = true };
+        static Description.Arguments BluePainting = new Description.Arguments { foregroundColor = "blue", isPainting = true };
+
+        static Description.Arguments Red = new Description.Arguments { foregroundColor = "red" };
+        static Description.Arguments RedOld = new Description.Arguments { foregroundColor = "red", isOld = true };
+        static Description.Arguments RedOldBlackAndWhite = new Description.Arguments { foregroundColor = "red", isOld = true, isBlackAndWhite = true };
+        static Description.Arguments RedPhoto = new Description.Arguments { foregroundColor = "red", isPhoto = true };
+        static Description.Arguments RedPrint = new Description.Arguments { foregroundColor = "red", isSign = true };
+        static Description.Arguments RedOldPhoto = new Description.Arguments { foregroundColor = "red", isOld = true, isPhoto = true };
 
         public static object[][] ComplexItems = new object[][]{
             new object[]{AVeryComplicatedBook, Blue, "A very complicated book" },
