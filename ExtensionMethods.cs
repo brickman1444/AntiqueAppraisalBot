@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 public static class ExtensionMethods
 {
     public static bool IsClipArt( this Microsoft.ProjectOxford.Vision.Contract.AnalysisResult analysisResult )
@@ -23,5 +26,15 @@ public static class ExtensionMethods
     public static bool IsBlackAndWhite( this Microsoft.ProjectOxford.Vision.Contract.AnalysisResult analysisResult )
     {
         return analysisResult.Color.IsBWImg;
+    }
+
+    public static IEnumerable<T> RandomSubset<T>(this IEnumerable<T> originalList, int numberOfItemsToTake, System.Random rnd)
+    {
+        if (numberOfItemsToTake > originalList.Count())
+        {
+            throw new System.Exception("Not enough items to take subset. Requested: " + numberOfItemsToTake + " Have: " + originalList.Count());
+        }
+
+        return originalList.OrderBy(x => rnd.NextDouble()).Take(numberOfItemsToTake);
     }
 }

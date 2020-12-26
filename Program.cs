@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Net;
 using System.IO;
-using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
-using Newtonsoft.Json;
 
 using Microsoft.ProjectOxford.Vision.Contract;
 
@@ -21,24 +17,6 @@ using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba
 
 namespace AppraisalBot
 {
-    public class MetSearchResponse
-    {
-        public int total;
-        public int[] objectIDs;
-    }
-
-    public class MetObjectResponse
-    {
-        public int objectID;
-        public bool isPublicDomain;
-        public string primaryImage;
-        public string primaryImageSmall;
-        public string[] additionalImages;
-        public string title;
-        public string rightsAndReproduction;
-        public string objectURL;
-    }
-
     class Appraisal
     {
         public Bitmap image;
@@ -178,22 +156,22 @@ namespace AppraisalBot
 
             Console.WriteLine("Getting collection listing");
 
-            IEnumerable<MetObjectResponse> responseObjects = GetCollectionListing(numItems);
+            IEnumerable<Art.Object> responseObjects = Art.GetRandomObjects(numItems);
 
             Console.WriteLine("Found " + responseObjects.Count() + " results");
 
             int objectCounter = 0;
-            foreach (MetObjectResponse responseObject in responseObjects)
+            foreach (Art.Object responseObject in responseObjects)
             {
                 Console.WriteLine("-----------------------------------------------------------------------");
 
-                string imageUrl = responseObject.primaryImage;
+                string imageUrl = responseObject.imageURL;
                 Console.WriteLine("image url: " + imageUrl);
 
-                string fullListingURL = responseObject.objectURL;
+                string fullListingURL = responseObject.listingURL;
                 Console.WriteLine("Listing page: " + fullListingURL);
 
-                Bitmap originalImage = DownloadImage(imageUrl);
+                Bitmap originalImage = Web.DownloadImage(imageUrl);
 
                 if (originalImage != null)
                 {
@@ -252,121 +230,6 @@ namespace AppraisalBot
 
                 objectCounter++;
             }
-        }
-
-        static string GetMetSearchAPIUrl(string material)
-        {
-            return "https://collectionapi.metmuseum.org/public/collection/v1/search"
-            + "?medium=" + material
-            + "&q=" + material // The endpoint doesn't return anything if q is not supplied.
-            + "&hasImages=true";
-        }
-
-        static string GetMetObjectAPIUrl(int objectID)
-        {
-            return "https://collectionapi.metmuseum.org/public/collection/v1/objects/" + objectID;
-        }
-
-        static IEnumerable<MetObjectResponse> GetCollectionListing(int numItems)
-        {
-            Random random = new Random();
-            IEnumerable<int> randomSetOfObjectIDs = GetRandomObjectIDs(numItems, random);
-
-            return randomSetOfObjectIDs.Select(objectID => GetObjectResponse(objectID));
-        }
-
-        static MetObjectResponse GetObjectResponse(int objectID)
-        {
-            return GetWebResponse<MetObjectResponse>(GetMetObjectAPIUrl(objectID));
-        }
-
-        static IEnumerable<int> GetRandomObjectIDs(int numItems, Random random)
-        {
-            BNolan.RandomSelection.Selector<string> materialSelector = new BNolan.RandomSelection.Selector<string>();
-
-            // Weights come from how many items fit the search criteria. This can be found by hitting:
-            // https://collectionapi.metmuseum.org/public/collection/v1/search?medium=Furniture&q=Furniture&hasImages=true
-            // and replacing Furniture with the name of the material.
-            // For scale, there are around 470,000 total objects.
-            materialSelector.TryAddItem("Bags", "Bags", 3);
-            materialSelector.TryAddItem("Jewelry", "Jewelry", 17);
-            materialSelector.TryAddItem("Sculpture", "Sculpture", 232);
-            materialSelector.TryAddItem("Bowls", "Bowls", 19);
-            materialSelector.TryAddItem("Furniture", "Furniture", 66);
-            materialSelector.TryAddItem("Musical%20instruments", "Musical%20instruments", 6);
-            materialSelector.TryAddItem("Vessels", "Vessels", 41);
-            materialSelector.TryAddItem("Ceramics", "Ceramics", 66);
-            materialSelector.TryAddItem("Wood", "Wood", 110);
-            materialSelector.TryAddItem("Paintings", "Paintings", 491);
-            materialSelector.TryAddItem("Timepieces", "Timepieces", 2);
-            materialSelector.TryAddItem("Arms", "Arms", 7);
-            materialSelector.TryAddItem("Costume", "Costume", 42);
-            materialSelector.TryAddItem("Cases", "Cases", 10);
-            materialSelector.TryAddItem("Metal", "Metal", 384);
-            materialSelector.TryAddItem("Lithographs", "Lithographs", 55);
-            materialSelector.TryAddItem("Prints", "Prints", 352);
-            materialSelector.TryAddItem("Silk", "Silk", 91);
-
-            string material = materialSelector.RandomSelect(1).First().Value;
-
-            string searchURL = GetMetSearchAPIUrl(material);
-
-            MetSearchResponse response = GetWebResponse<MetSearchResponse>(searchURL);
-
-            Console.WriteLine("Total items in category: " + response.total);
-
-            Console.WriteLine("Material: " + material + " numItems: " + numItems);
-
-            if (numItems > response.total)
-            {
-                throw new Exception("Not enough items meet search criteria. Requested: " + numItems + " Found: " + response.total);
-            }
-
-            return RandomSubset(response.objectIDs, numItems, random);
-        }
-
-        static T GetWebResponse<T>(string url)
-        {
-            Encoding encode = System.Text.Encoding.GetEncoding("utf-8");
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponseAsync().GetAwaiter().GetResult())
-            {
-                using (StreamReader readStream = new StreamReader(response.GetResponseStream(), encode))
-                {
-                    string responseText = readStream.ReadToEnd();
-                    return JsonConvert.DeserializeObject<T>(responseText);
-                }
-            }
-        }
-
-        static Bitmap DownloadImage(string url)
-        {
-            try
-            {
-                HttpWebRequest lxRequest = (HttpWebRequest)WebRequest.Create(url);
-
-                // returned values are returned as a stream, then read into a string
-                using (HttpWebResponse lxResponse = (HttpWebResponse)lxRequest.GetResponseAsync().GetAwaiter().GetResult())
-                {
-
-                    Bitmap image = Image.Load<PixelColor>(lxResponse.GetResponseStream());
-
-                    if (image.Width >= 250)
-                    {
-                        return image;
-                    }
-                    else
-                    {
-                        Console.WriteLine("throwing out image because it's too small. Width: " + image.Width);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("exception thrown during get for " + url + " " + e);
-            }
-            return null;
         }
 
         static PriceRange GetPriceRange(string caption, double confidence, float expensiveMultiplier, Random rnd)
@@ -669,16 +532,6 @@ namespace AppraisalBot
             }
         }
 
-        static IEnumerable<T> RandomSubset<T>(IEnumerable<T> originalList, int numberOfItemsToTake, Random rnd)
-        {
-            if (numberOfItemsToTake > originalList.Count())
-            {
-                throw new Exception("Not enough items to take subset. Requested: " + numberOfItemsToTake + " Have: " + originalList.Count());
-            }
-
-            return originalList.OrderBy(x => rnd.NextDouble()).Take(numberOfItemsToTake);
-        }
-
         public enum LoadImageType
         {
             Source,
@@ -714,7 +567,5 @@ namespace AppraisalBot
         {
             return Assembly.GetEntryAssembly().GetName().Name.Contains("test");
         }
-
-
     }
 }
