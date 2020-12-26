@@ -76,10 +76,7 @@ namespace AppraisalBot
 
         static double SquaredColorDistance( Rgba32 color1, Rgba32 color2 )
         {
-            return Math.Pow( color1.R - color2.R, 2 )
-                    + Math.Pow( color1.G - color2.G, 2 )
-                    + Math.Pow( color1.B - color2.B, 2 )
-                    + Math.Pow( color1.A - color2.A, 2 );
+            return System.Numerics.Vector4.DistanceSquared( color1.ToVector4(), color2.ToVector4() );
         }
     }
 
