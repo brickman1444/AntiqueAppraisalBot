@@ -12,6 +12,9 @@ namespace AppraisalBot
         static Caption APerson = new Caption{Text = "A person",};
         static Caption AVeryComplicatedBook = new Caption{Text = "A very complicated book",};
         static Caption AVeryComplicatedVase = new Caption{Text = "A very complicated vase",};
+        static Caption AnOldPhotoOfAPerson = new Caption{Text = "An old photo of a person",};
+        static Caption AGroupOfPeoplePosingForTheCamera = new Caption{Text = "A group of people posing for the camera",};
+        static Caption AGroupOfPeoplePosingForAPhotoInFrontOfAWindow = new Caption{Text = "A group of people posing for a photo in front of a window",};
 
         static Description.Arguments Blue = new Description.Arguments{foregroundColor = "blue"};
         static Description.Arguments BlueBlackAndWhite = new Description.Arguments{foregroundColor = "blue", isBlackAndWhite = true};
@@ -23,12 +26,14 @@ namespace AppraisalBot
         static Description.Arguments RedOldBlackAndWhite = new Description.Arguments{foregroundColor = "red", isOld = true, isBlackAndWhite = true};
         static Description.Arguments RedPhoto = new Description.Arguments{foregroundColor = "red", isPhoto = true};
         static Description.Arguments RedPrint = new Description.Arguments{foregroundColor = "red", isSign = true};
+        static Description.Arguments RedOldPhoto = new Description.Arguments{foregroundColor = "red", isOld = true, isPhoto = true};
 
         public static object[][] ComplexItems = new object[][]{
             new object[]{AVeryComplicatedBook, Blue, "A very complicated book" },
             new object[]{AVeryComplicatedBook, BlueBlackAndWhite, "A very complicated book" },
             new object[]{AVeryComplicatedVase, RedOld, "A very complicated vase" },
             new object[]{AVeryComplicatedVase, RedOldBlackAndWhite, "A very complicated vase" },
+            new object[]{AnOldPhotoOfAPerson, RedOldPhoto, "An old photo of a person" },
         };
 
         [Theory]
@@ -70,6 +75,8 @@ namespace AppraisalBot
             new object[]{APerson, BluePainting, "A painting of a person" },
             new object[]{APerson, RedPhoto, "A photo of a person" },
             new object[]{APerson, RedPrint, "A print of a person" },
+            new object[]{AGroupOfPeoplePosingForTheCamera, RedPhoto, "A photo of a group of people posing for the camera" },
+            new object[]{AGroupOfPeoplePosingForAPhotoInFrontOfAWindow, RedPhoto, "A photo of a group of people posing for a photo in front of a window" },
         };
 
         [Theory]
