@@ -603,6 +603,7 @@ namespace AppraisalBot
                 "A sign",
                 "A envelope",
                 "A pot",
+                "A book",
             };
 
             bool isSimple = commonSimpleDescriptions.Contains(descriptionText);
