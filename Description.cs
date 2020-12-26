@@ -86,6 +86,8 @@ namespace AppraisalBot
                 }
             }
 
+            descriptionText = NeutralizeGender(descriptionText);
+
             if (descriptionText.StartsWith("A person") || descriptionText.StartsWith("A group of people"))
             {
                 if (arguments.isPainting)
@@ -107,6 +109,17 @@ namespace AppraisalBot
             }
 
             return descriptionText;
+        }
+
+        static string NeutralizeGender(string source)
+        {
+            string result = source;
+            result = result.Replace("woman", "person");
+            result = result.Replace("women", "people");
+            result = result.Replace("man", "person");
+            result = result.Replace("men", "people");
+
+            return result;
         }
     }
 }

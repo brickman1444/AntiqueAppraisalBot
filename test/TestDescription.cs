@@ -16,6 +16,9 @@ namespace AppraisalBot
         static Caption APersonSittingOnABook = new Caption{Text = "A person sitting on a book",};
         static Caption AGroupOfPeoplePosingForTheCamera = new Caption{Text = "A group of people posing for the camera",};
         static Caption AGroupOfPeoplePosingForAPhotoInFrontOfAWindow = new Caption{Text = "A group of people posing for a photo in front of a window",};
+        static Caption AManStandingNextToAVase = new Caption{Text = "A man standing next to a vase"};
+        static Caption AGroupOfStuffedAnimalsSittingNextToAWoman = new Caption{Text = "A group of stuffed animals sitting next to a woman"};
+        static Caption AWomanStandingInFrontOfAWindow = new Caption{Text = "A woman standing in front of a window"};
 
         static Description.Arguments Blue = new Description.Arguments{foregroundColor = "blue"};
         static Description.Arguments BlueBlackAndWhite = new Description.Arguments{foregroundColor = "blue", isBlackAndWhite = true};
@@ -84,6 +87,20 @@ namespace AppraisalBot
         [Theory]
         [MemberData(nameof(People))]
         public static void WhenCaptionIncludesPeopleThenDescriptionAddsArtQualifier(Caption caption, Description.Arguments arguments, string expectedDescription)
+        {
+            string actualDescription = Description.Get(caption, arguments);
+            Assert.Equal(expectedDescription, actualDescription);
+        }
+
+        public static object[][] MenAndWomen = new object[][]{
+            new object[]{AManStandingNextToAVase, Blue, "A statue of a person standing next to a vase" },
+            new object[]{AGroupOfStuffedAnimalsSittingNextToAWoman, BluePainting, "A group of stuffed animals sitting next to a person" },
+            new object[]{AWomanStandingInFrontOfAWindow, RedPhoto, "A photo of a person standing in front of a window" },
+        };
+
+        [Theory]
+        [MemberData(nameof(MenAndWomen))]
+        public static void DescriptionsAreGenderNeutral(Caption caption, Description.Arguments arguments, string expectedDescription)
         {
             string actualDescription = Description.Get(caption, arguments);
             Assert.Equal(expectedDescription, actualDescription);
