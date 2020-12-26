@@ -12,7 +12,7 @@ namespace AppraisalBot
 
         public static IEnumerable<Object> GetRandomObjects(int numObjects)
         {
-            IArtSource artSource = new MetropolitanMuseumOfArt();
+            IArtSource artSource = new HarvardArtMuseum();
 
             return artSource.GetRandomObjects(numObjects);
         }
