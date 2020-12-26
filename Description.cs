@@ -11,6 +11,9 @@ namespace AppraisalBot
             public string foregroundColor = "";
             public bool isOld = false;
             public bool isBlackAndWhite = false;
+            public bool isPainting = false;
+            public bool isPhoto = false;
+            public bool isSign = false;
         }
 
         public static string Get(Caption caption, Arguments arguments)
@@ -79,6 +82,26 @@ namespace AppraisalBot
                     string color = arguments.foregroundColor.ToLower();
                     descriptionText = descriptionText.Substring(0, 2) + color + " " + descriptionText.Substring(2);
                     System.Console.WriteLine("Added color to simple description: " + color);
+                }
+            }
+
+            if (descriptionText == "A person")
+            {
+                if (arguments.isPainting)
+                {
+                    descriptionText = "A painting of a " + descriptionText.Substring(2);
+                }
+                else if (arguments.isPhoto)
+                {
+                    descriptionText = "A photo of a " + descriptionText.Substring(2);
+                }
+                else if (arguments.isSign)
+                {
+                    descriptionText = "A print of a " + descriptionText.Substring(2);
+                }
+                else
+                {
+                    descriptionText = "A statue of a " + descriptionText.Substring(2);
                 }
             }
 

@@ -9,15 +9,20 @@ namespace AppraisalBot
     {
         static Caption ABook = new Caption{Text = "A book",};
         static Caption AVase = new Caption{Text = "A vase",};
+        static Caption APerson = new Caption{Text = "A person",};
         static Caption AVeryComplicatedBook = new Caption{Text = "A very complicated book",};
         static Caption AVeryComplicatedVase = new Caption{Text = "A very complicated vase",};
 
         static Description.Arguments Blue = new Description.Arguments{foregroundColor = "blue"};
         static Description.Arguments BlueBlackAndWhite = new Description.Arguments{foregroundColor = "blue", isBlackAndWhite = true};
         static Description.Arguments BlueOldBlackAndWhite = new Description.Arguments{foregroundColor = "blue", isOld = true, isBlackAndWhite = true};
+        static Description.Arguments BluePainting = new Description.Arguments{foregroundColor = "blue", isPainting = true};
+        
         static Description.Arguments Red = new Description.Arguments{foregroundColor = "red"};
         static Description.Arguments RedOld = new Description.Arguments{foregroundColor = "red", isOld = true};
         static Description.Arguments RedOldBlackAndWhite = new Description.Arguments{foregroundColor = "red", isOld = true, isBlackAndWhite = true};
+        static Description.Arguments RedPhoto = new Description.Arguments{foregroundColor = "red", isPhoto = true};
+        static Description.Arguments RedPrint = new Description.Arguments{foregroundColor = "red", isSign = true};
 
         public static object[][] ComplexItems = new object[][]{
             new object[]{AVeryComplicatedBook, Blue, "A very complicated book" },
@@ -55,6 +60,21 @@ namespace AppraisalBot
         [Theory]
         [MemberData(nameof(SimpleOldBlackAndWhiteItems))]
         public static void WhenCaptionsAreSimpleAndItemIsOldAndBlackAndWhiteThenDescriptionHasOld(Caption caption, Description.Arguments arguments, string expectedDescription)
+        {
+            string actualDescription = Description.Get(caption, arguments);
+            Assert.Equal(expectedDescription, actualDescription);
+        }
+
+        public static object[][] People = new object[][]{
+            new object[]{APerson, Blue, "A statue of a person" },
+            new object[]{APerson, BluePainting, "A painting of a person" },
+            new object[]{APerson, RedPhoto, "A photo of a person" },
+            new object[]{APerson, RedPrint, "A print of a person" },
+        };
+
+        [Theory]
+        [MemberData(nameof(People))]
+        public static void WhenCaptionIncludesPeopleThenDescriptionAddsArtQualifier(Caption caption, Description.Arguments arguments, string expectedDescription)
         {
             string actualDescription = Description.Get(caption, arguments);
             Assert.Equal(expectedDescription, actualDescription);
