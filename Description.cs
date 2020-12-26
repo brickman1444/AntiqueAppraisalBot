@@ -6,7 +6,14 @@ namespace AppraisalBot
 {
     public static class Description
     {
-        public static string Get(Caption caption, string foregroundColor, bool isOld, bool isBlackAndWhite)
+        public class Arguments
+        {
+            public string foregroundColor = "";
+            public bool isOld = false;
+            public bool isBlackAndWhite = false;
+        }
+
+        public static string Get(Caption caption, Arguments arguments)
         {
             // Filter and adjust the caption
             string descriptionText = caption.Text;
@@ -52,9 +59,9 @@ namespace AppraisalBot
 
             if (isSimple)
             {
-                if (isBlackAndWhite)
+                if (arguments.isBlackAndWhite)
                 {
-                    if (isOld)
+                    if (arguments.isOld)
                     {
                         descriptionText = "An old " + descriptionText.Substring(2);
                         System.Console.WriteLine("Added 'old' to simple description");
@@ -69,7 +76,7 @@ namespace AppraisalBot
                 }
                 else
                 {
-                    string color = foregroundColor.ToLower();
+                    string color = arguments.foregroundColor.ToLower();
                     descriptionText = descriptionText.Substring(0, 2) + color + " " + descriptionText.Substring(2);
                     System.Console.WriteLine("Added color to simple description: " + color);
                 }

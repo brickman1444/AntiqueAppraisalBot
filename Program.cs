@@ -447,7 +447,14 @@ namespace AppraisalBot
             Console.WriteLine("Is Old: " + isOld);
             bool isBlackAndWhite = IsBlackAndWhite(analysisResult.generalAnalysisResult);
             Console.WriteLine("Is Black and White: " + isBlackAndWhite);
-            string descriptionText = Description.Get(caption, foregroundColor, isOld, isBlackAndWhite);
+
+            Description.Arguments descriptionArguments = new Description.Arguments{
+                foregroundColor = foregroundColor,
+                isOld = isOld,
+                isBlackAndWhite = isBlackAndWhite,
+            };
+
+            string descriptionText = Description.Get(caption, descriptionArguments);
             Console.WriteLine("Final Description Text: " + descriptionText);
             bool isPainting = PaintingDetection.IsPainting(analysisResult);
             Console.WriteLine("Is Painting: " + isPainting);
