@@ -4,6 +4,6 @@ namespace AppraisalBot
 {
     public interface IArtSource
     {
-        IEnumerable<Art.Object> GetRandomObjects(int numObjects);
+        Art.Object GetRandomObject(System.Random random);
     }
 }

@@ -37,4 +37,16 @@ public static class ExtensionMethods
 
         return originalList.OrderBy(x => rnd.NextDouble()).Take(numberOfItemsToTake);
     }
+
+    public static T RandomElement<T>(this IEnumerable<T> originalList, System.Random random)
+    {
+        if (originalList.Count() == 0)
+        {
+            throw new System.Exception("Collection is empty");
+        }
+
+        int randomIndex = random.Next(originalList.Count());
+
+        return originalList.ElementAt(randomIndex);
+    }
 }

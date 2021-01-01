@@ -16,19 +16,18 @@ namespace AppraisalBot
             {
                 public string url = "";
                 public string primaryimageurl = "";
+                public int imagepermissionlevel = 0;
             }
 
             public Info info = new Info();
             public Record[] records = new Record[] { };
         }
 
-        public IEnumerable<Art.Object> GetRandomObjects(int numItems)
+        private readonly string apiKey = "";
+
+        public HarvardArtMuseum()
         {
-            string apiKey = GetAPIKey();
-
-            System.Random random = new System.Random();
-
-            return new Art.Object[] { GetRandomObject(apiKey, random) };
+            apiKey = GetAPIKey();
         }
 
         static string GetAPIKey()
@@ -77,6 +76,11 @@ namespace AppraisalBot
             return "https://api.harvardartmuseums.org/object?apikey=" + apiKey + "&hasimage=1&classification=" + classification + pageParameter;
         }
 
+        public Art.Object GetRandomObject(System.Random random)
+        {
+            return HarvardArtMuseum.GetRandomObject(apiKey, random);
+        }
+
         static Art.Object GetRandomObject(string apiKey, System.Random random)
         {
             string classification = GetRandomClassification();
@@ -87,13 +91,32 @@ namespace AppraisalBot
 
             int randomPage = random.Next(pageCountResult.info.pages) + 1;
 
+            System.Console.WriteLine(string.Format("Choosing page {0} out of {1}", randomPage, pageCountResult.info.pages ) );
+
             SearchResult randomPageResult = Web.GetWebResponse<SearchResult>(GetAPIURL(apiKey, classification, randomPage));
 
-            int randomRecordIndex = random.Next(randomPageResult.records.Count());
-
-            SearchResult.Record randomRecord = randomPageResult.records[randomRecordIndex];
+            SearchResult.Record randomRecord = randomPageResult.records.RandomElement(random);
 
             return new Art.Object { imageURL = randomRecord.primaryimageurl, listingURL = randomRecord.url, artSourceHashTag = "#harvardartmuseums" };
+        }
+
+        enum ImagePermissionLevel
+        {
+            DisplayAtAnySize = 0,
+            DisplayAtMaximumPixelDimensionOf256px = 1,
+            DoNotDisplayAnyImages = 2,
+        }
+
+        static Art.Object MakeArtObject(SearchResult.Record record)
+        {
+            if (string.IsNullOrEmpty(record.primaryimageurl)
+            || string.IsNullOrEmpty(record.url)
+            || record.imagepermissionlevel != (int)ImagePermissionLevel.DisplayAtAnySize)
+            {
+                return null;
+            }
+
+            return new Art.Object { imageURL = record.primaryimageurl, listingURL = record.url, artSourceHashTag = "#harvardartmuseums" };
         }
     }
 }

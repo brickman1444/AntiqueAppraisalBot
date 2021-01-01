@@ -23,17 +23,16 @@ namespace AppraisalBot
             public string objectURL;
         }
 
-        public IEnumerable<Art.Object> GetRandomObjects(int numItems)
+        public Art.Object GetRandomObject(System.Random random)
         {
-            System.Random random = new System.Random();
-            IEnumerable<int> randomSetOfObjectIDs = GetRandomObjectIDs(numItems, random);
+            int objectID = GetRandomObjectID(random);
 
-            return randomSetOfObjectIDs
-            .Select(objectID => GetObjectResponse(objectID))
-            .Select(metResponse => new Art.Object { imageURL = metResponse.primaryImage, listingURL = metResponse.objectURL, artSourceHashTag = "#metmuseum" });
+            MetObjectResponse metResponse = GetObjectResponse(objectID);
+
+            return new Art.Object { imageURL = metResponse.primaryImage, listingURL = metResponse.objectURL, artSourceHashTag = "#metmuseum" };
         }
 
-        static IEnumerable<int> GetRandomObjectIDs(int numItems, System.Random random)
+        static int GetRandomObjectID(System.Random random)
         {
             BNolan.RandomSelection.Selector<string> materialSelector = new BNolan.RandomSelection.Selector<string>();
 
@@ -66,16 +65,16 @@ namespace AppraisalBot
 
             MetSearchResponse response = Web.GetWebResponse<MetSearchResponse>(searchURL);
 
-            System.Console.WriteLine("Total items in category: " + response.total);
+            System.Console.WriteLine();
 
-            System.Console.WriteLine("Material: " + material + " numItems: " + numItems);
+            System.Console.WriteLine("Material: " + material + " Total items in category: " + response.total);
 
-            if (numItems > response.total)
+            if (response.total == 0)
             {
-                throw new System.Exception("Not enough items meet search criteria. Requested: " + numItems + " Found: " + response.total);
+                throw new System.Exception("Not enough items meet search criteria.");
             }
 
-            return response.objectIDs.RandomSubset(numItems, random);
+            return response.objectIDs.RandomElement(random);
         }
 
         static string GetMetSearchAPIUrl(string material)
