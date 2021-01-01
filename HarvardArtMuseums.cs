@@ -44,29 +44,27 @@ namespace AppraisalBot
 
         static string GetRandomClassification()
         {
-            BNolan.RandomSelection.Selector<string> classificationSelector = new BNolan.RandomSelection.Selector<string>();
+            // TODO: Once https://github.com/bnolan001/RandomSelection/pull/1 is merged in, this should
+            // be replaced with the old weighted random selection.
+            string[] classifications = new string[] {
+                "Armor",
+                "Recreational+Artifacts",
+                "Amulets",
+                "Timepieces",
+                "Furniture",
+                "Mirrors",
+                "Weapons+and+Ammunition",
+                "Boxes",
+                "Lighting+Devices",
+                "Jewelry",
+                "Tools+and+Equipment",
+                "Ritual+Implements",
+                "Textile+Arts",
+                "Sculpture",
+                "Vessels",
+            };
 
-            // Weights come from how many items fit the search criteria. This can be found by hitting:
-            // https://api.harvardartmuseums.org/object?apikey=API_KEY&hasimage=1&classification=Furniture
-            // and replacing Furniture with the name of the material.
-            // For scale, there are around 200,000 total objects.
-            classificationSelector.TryAddItem("Armor", "Armor", 50); // 37
-            classificationSelector.TryAddItem("Recreational+Artifacts", "Recreational+Artifacts", 50); // 72
-            classificationSelector.TryAddItem("Amulets", "Amulets", 100); // 138
-            classificationSelector.TryAddItem("Timepieces", "Timepieces", 150); // 139
-            classificationSelector.TryAddItem("Furniture", "Furniture", 150); // 141
-            classificationSelector.TryAddItem("Mirrors", "Mirrors", 100); // 142
-            classificationSelector.TryAddItem("Weapons+and+Ammunition", "Weapons+and+Ammunition", 200); // 184
-            classificationSelector.TryAddItem("Boxes", "Boxes", 150); // 223
-            classificationSelector.TryAddItem("Lighting+Devices", "Lighting+Devices", 300); // 457
-            classificationSelector.TryAddItem("Jewelry", "Jewelry", 200); // 680
-            classificationSelector.TryAddItem("Tools+and+Equipment", "Tools+and+Equipment", 300); // 637
-            classificationSelector.TryAddItem("Ritual+Implements", "Ritual+Implements", 200); // 902
-            classificationSelector.TryAddItem("Textile+Arts", "Textile+Arts", 200); // 1833
-            classificationSelector.TryAddItem("Sculpture", "Sculpture", 200); // 4549
-            classificationSelector.TryAddItem("Vessels", "Vessels", 100); // 5021
-
-            return classificationSelector.RandomSelect(1).First().Value;
+            return classifications.RandomElement(new System.Random());
         }
 
         static string GetAPIURL(string apiKey, string classification, int page = 0)
