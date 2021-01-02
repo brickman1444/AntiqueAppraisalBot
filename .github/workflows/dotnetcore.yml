@@ -24,7 +24,7 @@ jobs:
       run: dotnet lambda package --configuration Release --framework netcoreapp2.1
 
     - name: List Directory
-      run: ls
+      run: ls --recursive
 
     - name: Update Lambda
       uses: kazimanzurrashid/aws-lambda-update-action@v1
