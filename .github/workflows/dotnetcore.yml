@@ -21,7 +21,7 @@ jobs:
       run: dotnet test
 
     - name: Build Lambda package
-      run: dotnet lambda package --configuration Release --framework netcoreapp2.1
+      run: dotnet lambda package --configuration Release --framework netcoreapp2.1 --output-package AntiqueAppraisalBot.zip
 
     - name: List Directory
       run: ls --recursive
@@ -29,7 +29,7 @@ jobs:
     - name: Update Lambda
       uses: kazimanzurrashid/aws-lambda-update-action@v1
       with:
-        zip-file: bin/Release/netcoreapp2.1/AppraisalBot.zip
+        zip-file: bin/Release/netcoreapp2.1/AntiqueAppraisalBot.zip
         lambda-name: AppraisalBotFunction
       env:
         AWS_REGION: ${{ secrets.AWS_REGION }}
