@@ -21,7 +21,7 @@ jobs:
       run: dotnet test
 
     - name: Build Lambda package
-      run: dotnet lambda package --configuration Release --framework netcoreapp2.1 --output-package AntiqueAppraisalBot.zip
+      run: dotnet lambda package --configuration Release --framework netcoreapp2.1 --output-package bin/Release/netcoreapp2.1/AntiqueAppraisalBot.zip
 
     - name: List Directory
       run: ls --recursive
