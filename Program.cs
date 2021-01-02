@@ -70,7 +70,13 @@ namespace AppraisalBot
             {
                 DeletePreviousOutput();
 
-                CreateAppraisals(PostToTwitterMode.No);
+                int numberOfAppraisals = 1;
+                if (executionArguments.Count() > 1)
+                {
+                    numberOfAppraisals = int.Parse(executionArguments[1]);
+                }
+
+                CreateAppraisals(PostToTwitterMode.No, numberOfAppraisals);
             }
             else if (executionArguments[0] == "create-and-post-appraisal-for-lambda")
             {
@@ -78,7 +84,7 @@ namespace AppraisalBot
 
                 InitializeTwitterCredentials();
 
-                CreateAppraisals(PostToTwitterMode.Yes);
+                CreateAppraisals(PostToTwitterMode.Yes, 1);
             }
             else if (executionArguments[0] == "test-load-every-file")
             {
@@ -144,15 +150,13 @@ namespace AppraisalBot
             No
         }
 
-        static void CreateAppraisals(PostToTwitterMode postToTwitterMode)
+        static void CreateAppraisals(PostToTwitterMode postToTwitterMode, int numberOfAppraisals)
         {
-            int numItems = 1;
-
             Console.WriteLine("Getting collection listing");
 
             Art art = new Art(new IArtSource[]{ new HarvardArtMuseum() });
 
-            IEnumerable<Art.Object> responseObjects = art.GetRandomObjects(numItems);
+            IEnumerable<Art.Object> responseObjects = art.GetRandomObjects(numberOfAppraisals);
 
             Console.WriteLine("Found " + responseObjects.Count() + " results");
 
