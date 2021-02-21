@@ -154,7 +154,7 @@ namespace AppraisalBot
         {
             Console.WriteLine("Getting collection listing");
 
-            Art art = new Art(new IArtSource[]{ new HarvardArtMuseum() });
+            Art art = new Art(new IArtSource[]{ new HarvardArtMuseum(), new MetropolitanMuseumOfArt() });
 
             IEnumerable<Art.Object> responseObjects = art.GetRandomObjects(numberOfAppraisals);
 
