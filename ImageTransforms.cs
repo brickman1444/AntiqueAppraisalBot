@@ -82,7 +82,7 @@ namespace AppraisalBot
                 newBottomLeft,
                 newBottomRight);
 
-            sourceArtImage.Mutate(x => x.Transform(new ProjectiveTransformBuilder().AppendMatrix(newMatrix)));
+            sourceArtImage.Mutate(x => x.Transform(new ProjectiveTransformBuilder().AppendMatrix(newMatrix), SixLabors.ImageSharp.Processing.KnownResamplers.Spline));
 
             destinationImage.Mutate(x => x.DrawImage(sourceArtImage, 1.0f));
 
