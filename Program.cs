@@ -316,16 +316,6 @@ namespace AppraisalBot
             Console.WriteLine("Is Old: " + isOld);
             bool isBlackAndWhite = IsBlackAndWhite(analysisResult.generalAnalysisResult);
             Console.WriteLine("Is Black and White: " + isBlackAndWhite);
-
-            Description.Arguments descriptionArguments = new Description.Arguments
-            {
-                foregroundColor = foregroundColor,
-                isOld = isOld,
-                isBlackAndWhite = isBlackAndWhite,
-            };
-
-            string descriptionText = Description.Get(caption, descriptionArguments);
-            Console.WriteLine("Final Description Text: " + descriptionText);
             bool isPainting = PaintingDetection.IsPainting(analysisResult);
             Console.WriteLine("Is Painting: " + isPainting);
             bool isPhoto = !isPainting && IsPhoto(analysisResult.generalAnalysisResult);
@@ -333,6 +323,19 @@ namespace AppraisalBot
             bool isSign = SignDetection.IsSign(analysisResult);
             Console.WriteLine("Is Sign: " + isSign);
             int? extractedYear = YearExtractor.ExtractYear(analysisResult.ocrAnalysisResult);
+            
+            Description.Arguments descriptionArguments = new Description.Arguments
+            {
+                foregroundColor = foregroundColor,
+                isOld = isOld,
+                isBlackAndWhite = isBlackAndWhite,
+                isPainting = isPainting,
+                isPhoto = isPhoto,
+                isSign = isSign,
+            };
+
+            string descriptionText = Description.Get(caption, descriptionArguments);
+            Console.WriteLine("Final Description Text: " + descriptionText);
             Console.WriteLine("Extracted Year: " + extractedYear);
             string extractedLocale = LanguageCodeToLocation.LookUp(analysisResult.ocrAnalysisResult);
             Console.WriteLine("Extracted Locale: " + extractedLocale);
