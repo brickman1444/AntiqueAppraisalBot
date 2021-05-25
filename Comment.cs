@@ -4,6 +4,33 @@ namespace AppraisalBot
 {
     class Comment
     {
+        // Coat that if touched loses all value $0-$0
+        // Silverware stolen from Red Lobster
+            // silverware
+        // Fiddle used to beat devil in fiddle-off
+            // instrument
+        // Bowl Jesus threw up in twice
+        // A cabinet with $2,000 inside it
+        // Adam and Eve's pizza cutters
+            // old objects
+        // The worst owl
+            // simple descriptions
+        // Sassiest statue on earth (you can't afford it, honey) (if you have to ask, you can't afford it)
+            // Expensive objects
+        // The worst thing we could find ($0.05 - $0.06)
+        // Sword from the past
+            // old items
+        // World's worst umbrella ($20-$30)
+            // simple descriptions
+        // Doll that will kill again
+            // simple descriptions of people
+        // Chair that just has to be different
+            // simple description
+        // Painting that kills you if you look at it
+            // paintings
+        // What you see before you die
+            // paintings or statues
+
         static string[] comments = {
             //"If it were to appear at auction it would have an estimate of x to y dollars.",
             //"I could see a collector being quite willing to pay between x and y dollars for this.",
