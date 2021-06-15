@@ -11,12 +11,12 @@ namespace AppraisalBot
         {
             Bitmap composedImage = TransformImage();
 
-            composedImage.Save(@"testArt/perspectiveTransform0.jpg");
+            composedImage.Save(@"testArt/perspectiveTransformExpected.jpg");
         }
 
         public static Bitmap TransformImage()
         {
-            Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, "sourceImage0.jpg");
+            Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransformSource.jpg");
 
             Bitmap copiedSourceImage = sourceImage.Clone();
 
@@ -38,7 +38,7 @@ namespace AppraisalBot
         {
             Bitmap actualImage = TestImageTransformUtils.TransformImage();
 
-            Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransform0.jpg");
+            Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransformExpected.jpg");
 
             TestUtils.AssertImagesAreTheSame(expectedImage, actualImage);
         }
