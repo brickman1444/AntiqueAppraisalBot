@@ -574,6 +574,11 @@ namespace AppraisalBot
             }
         }
 
+        public static void SaveTestImage(Bitmap image, string fileName)
+        {
+            image.Save("../../../testArt/" + fileName);
+        }
+
         public static bool IsRunningTests()
         {
             return Assembly.GetEntryAssembly().GetName().Name.Contains("test");

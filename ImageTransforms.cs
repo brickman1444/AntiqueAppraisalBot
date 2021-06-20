@@ -67,6 +67,14 @@ namespace AppraisalBot
             return PerspectiveTransform(sourceArtImage, photoImage, newTopLeft, newTopRight, newBottomLeft, newBottomRight);
         }
 
+        public static float GetScaleFactor(float sourceWidth, float sourceHeight, Vector2 newBottomRight)
+        {
+            float widthFactor = sourceWidth / newBottomRight.X;
+            float heightFactor = sourceHeight / newBottomRight.Y;
+
+            return Math.Min(widthFactor, heightFactor);
+        }
+
         public static Bitmap PerspectiveTransform(Bitmap sourceArtImage, Bitmap destinationImage, Vector2 newTopLeft, Vector2 newTopRight, Vector2 newBottomLeft, Vector2 newBottomRight)
         {
             // Corner numbering chosen arbitrarily
@@ -82,7 +90,11 @@ namespace AppraisalBot
                 newBottomLeft,
                 newBottomRight);
 
-            sourceArtImage.Mutate(x => x.Transform(new ProjectiveTransformBuilder().AppendMatrix(newMatrix), SixLabors.ImageSharp.Processing.KnownResamplers.Spline));
+            float scaleFactor = GetScaleFactor(sourceArtImage.Width, sourceArtImage.Height, newBottomRight);
+
+            sourceArtImage.Mutate(x => x.Transform(new ProjectiveTransformBuilder().AppendMatrix(newMatrix).AppendScale(scaleFactor), SixLabors.ImageSharp.Processing.KnownResamplers.Spline));
+
+            sourceArtImage.Mutate(x => x.Resize((int)(sourceArtImage.Width / scaleFactor), (int)(sourceArtImage.Height / scaleFactor)));
 
             destinationImage.Mutate(x => x.DrawImage(sourceArtImage, 1.0f));
 
