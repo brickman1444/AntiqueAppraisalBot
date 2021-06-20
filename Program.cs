@@ -553,12 +553,6 @@ namespace AppraisalBot
 
             if (Program.IsRunningTests())
             {
-                Console.WriteLine("Files in directory:");
-                foreach (string file in Directory.GetFiles("../../../" + directory))
-                {
-                    Console.WriteLine(file);
-                }
-
                 return Image.Load<PixelColor>("../../../" + directory + "/" + fileName);
             }
             else
