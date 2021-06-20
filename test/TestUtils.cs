@@ -10,18 +10,26 @@ namespace AppraisalBot
 {
     public static class TestUtils
     {
+        private const float imageDifferenceThreshold = 0.0001f;
+
         public static Random GetDeterministicRandom()
         {
             return new Random(0);
         }
 
-        public static void AssertImagesAreTheSame(Bitmap imageA, Bitmap imageB)
+        public static void AssertImagesAreTheSame(Bitmap a, Bitmap b)
         {
-            float percentDifference = GetPercentDifference(imageA, imageB);
-            Assert.InRange(percentDifference, 0.0f, 0.001f);
+            float percentDifference = GetPercentDifference(a, b);
+            Assert.InRange(percentDifference, 0.0f, imageDifferenceThreshold);
         }
 
-        public static float GetPercentDifference(Bitmap imageA, Bitmap imageB, float perPixelThreshold = 0.02f)
+        public static void AssertImagesAreDifferent(Bitmap a, Bitmap b)
+        {
+            float percentDifference = GetPercentDifference(a, b);
+            Assert.InRange(percentDifference, imageDifferenceThreshold, 1.0f);
+        }
+
+        public static float GetPercentDifference(Bitmap imageA, Bitmap imageB, float perPixelThreshold = 0.05f)
         {
             if (imageA.Height != imageB.Height || imageA.Width != imageB.Width)
             {

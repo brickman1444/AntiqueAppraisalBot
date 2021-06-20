@@ -42,6 +42,33 @@ namespace AppraisalBot
 
             Assert.Equal(0.0f, TestUtils.GetPercentDifference(art, art));
         }
+
+        [Fact]
+        public static void SmallTextDifferencesAreDetected()
+        {
+            System.Func<string, Bitmap> MakeAppraisalImage = (string description) => {
+                return Program.ComposeImage(
+                    new Bitmap(425, 625), // Relatively accurate background size for result images,
+                    description,
+                    0.5f,
+                    false,
+                    false,
+                    1.0f,
+                    false,
+                    false,
+                    9876,
+                    "Neverland",
+                    TestUtils.GetDeterministicRandom());
+            };
+
+            Bitmap ramp = MakeAppraisalImage("ramp");
+            Program.SaveTestImage(ramp, "actual/ramp.jpg");
+
+            Bitmap romp = MakeAppraisalImage("romp");
+            Program.SaveTestImage(romp, "actual/romp.jpg");
+
+            TestUtils.AssertImagesAreDifferent(ramp, romp);
+        }
     }
 }
 
