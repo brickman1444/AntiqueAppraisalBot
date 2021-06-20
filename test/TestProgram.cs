@@ -17,8 +17,8 @@ namespace AppraisalBot
         [Fact]
         public static void TestDeterministicRandomFromImage()
         {
-            Bitmap image1 = Program.LoadImage(Program.LoadImageType.Test, "sourceImage0.jpg");
-            Bitmap image2 = Program.LoadImage(Program.LoadImageType.Test, "sourceImage0.jpg");
+            Bitmap image1 = Program.LoadImage(Program.LoadImageType.Test, "paintingWithFace.jpg");
+            Bitmap image2 = Program.LoadImage(Program.LoadImageType.Test, "paintingWithFace.jpg");
 
             Random random1 = Program.GetDeterministicRandom(image1);
             Random random2 = Program.GetDeterministicRandom(image2);

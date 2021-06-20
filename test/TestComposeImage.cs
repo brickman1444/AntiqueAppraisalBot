@@ -5,20 +5,14 @@ using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba
 
 namespace AppraisalBot
 {
-    public static class TestComposeImageUtils
+    public static class TestComposeImage
     {
-        public static void UpdateExpectedOutput()
+        [Fact]
+        public static void ComposeImageAcceptanceTest()
         {
-            Bitmap composedImage = ComposeImage();
+            Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, "paintingWithFace.jpg");
 
-            composedImage.Save(@"testArt/finalImage0.jpg");
-        }
-
-        public static Bitmap ComposeImage()
-        {
-            Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, "sourceImage0.jpg");
-
-            return Program.ComposeImage(
+            Bitmap actualImage = Program.ComposeImage(
                 sourceImage,
                 "test description that is kind of long and has multiple lines",
                 0.5f,
@@ -30,17 +24,8 @@ namespace AppraisalBot
                 9876,
                 "Neverland",
                 TestUtils.GetDeterministicRandom());
-        }
-    }
 
-    public static class TestComposeImage
-    {
-        [Fact]
-        public static void ComposeImageAcceptanceTest()
-        {
-            Bitmap actualImage = TestComposeImageUtils.ComposeImage();
-
-            Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "finalImage0.jpg");
+            Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "expected/composedWithCaption.jpg");
 
             TestUtils.AssertImagesAreTheSame(expectedImage, actualImage);
         }
