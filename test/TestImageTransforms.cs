@@ -9,9 +9,11 @@ namespace AppraisalBot
     {
         public static void UpdateExpectedOutput()
         {
-            Bitmap composedImage = TransformImage();
+            Bitmap perspectiveTransformExpected = TransformImage();
+            perspectiveTransformExpected.Save(@"testArt/perspectiveTransformExpected.jpg");
 
-            composedImage.Save(@"testArt/perspectiveTransformExpected.jpg");
+            Bitmap composedExpected = ComposeOntoBackground();
+            composedExpected.Save(@"testArt/composedImageExpected.jpg");
         }
 
         public static Bitmap TransformImage()
@@ -29,6 +31,13 @@ namespace AppraisalBot
                 new SixLabors.ImageSharp.Point(400, 300));
             return copiedSourceImage;
         }
+
+        public static Bitmap ComposeOntoBackground()
+        {
+            Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransformSource.jpg");
+
+            return ImageTransforms.ComposeImageOntoPhoto(sourceImage);
+        }
     }
 
     public static class TestImageTransforms
@@ -39,6 +48,16 @@ namespace AppraisalBot
             Bitmap actualImage = TestImageTransformUtils.TransformImage();
 
             Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransformExpected.jpg");
+
+            TestUtils.AssertImagesAreTheSame(expectedImage, actualImage);
+        }
+
+        [Fact]
+        public static void ComposeOntoBackgroundAcceptanceTest()
+        {
+            Bitmap actualImage = TestImageTransformUtils.ComposeOntoBackground();
+
+            Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "composedImageExpected.jpg");
 
             TestUtils.AssertImagesAreTheSame(expectedImage, actualImage);
         }
