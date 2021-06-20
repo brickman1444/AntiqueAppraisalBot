@@ -29,16 +29,18 @@ namespace AppraisalBot
             TestUtils.AssertImagesAreTheSame(expectedImage, actualImage);
         }
 
-        [Fact]
-        public static void ComposeOntoBackgroundAcceptanceTest()
+        [Theory]
+        [InlineData("tallComposed.jpg")]
+        [InlineData("wideComposed.jpg")]
+        public static void ComposeOntoBackgroundAcceptanceTest(string fileName)
         {
-            Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransformSource.jpg");
+            Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, fileName);
 
             Bitmap actualImage = ImageTransforms.ComposeImageOntoPhoto(sourceImage);
 
-            Program.SaveTestImage(actualImage, "actual/composedImage.jpg");
+            Program.SaveTestImage(actualImage, "actual/" + fileName);
 
-            Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "expected/composedImage.jpg");
+            Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "expected/" + fileName);
 
             TestUtils.AssertImagesAreTheSame(expectedImage, actualImage);
         }
