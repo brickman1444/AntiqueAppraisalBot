@@ -5,38 +5,23 @@ using Bitmap = SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba
 
 namespace AppraisalBot
 {
-    public static class TestImageTransformUtils
-    {
-        public static Bitmap TransformImage()
-        {
-            Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransformSource.jpg");
-
-            Bitmap copiedSourceImage = sourceImage.Clone();
-
-            ImageTransforms.PerspectiveTransform(
-                sourceImage,
-                copiedSourceImage,
-                new SixLabors.ImageSharp.Point(10, 10),
-                new SixLabors.ImageSharp.Point(250, 50),
-                new SixLabors.ImageSharp.Point(30, 500),
-                new SixLabors.ImageSharp.Point(400, 300));
-            return copiedSourceImage;
-        }
-
-        public static Bitmap ComposeOntoBackground()
-        {
-            Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransformSource.jpg");
-
-            return ImageTransforms.ComposeImageOntoPhoto(sourceImage);
-        }
-    }
-
     public static class TestImageTransforms
     {
         [Fact]
         public static void TransformImageAcceptanceTest()
         {
-            Bitmap actualImage = TestImageTransformUtils.TransformImage();
+            Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransformSource.jpg");
+
+            Bitmap actualImage = sourceImage.Clone();
+
+            ImageTransforms.PerspectiveTransform(
+                sourceImage,
+                actualImage,
+                new SixLabors.ImageSharp.Point(10, 10),
+                new SixLabors.ImageSharp.Point(250, 50),
+                new SixLabors.ImageSharp.Point(30, 500),
+                new SixLabors.ImageSharp.Point(400, 300));
+
             Program.SaveTestImage(actualImage, "actual/perspectiveTransform.jpg");
 
             Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "expected/perspectiveTransform.jpg");
@@ -47,7 +32,9 @@ namespace AppraisalBot
         [Fact]
         public static void ComposeOntoBackgroundAcceptanceTest()
         {
-            Bitmap actualImage = TestImageTransformUtils.ComposeOntoBackground();
+            Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransformSource.jpg");
+
+            Bitmap actualImage = ImageTransforms.ComposeImageOntoPhoto(sourceImage);
 
             Program.SaveTestImage(actualImage, "actual/composedImage.jpg");
 
