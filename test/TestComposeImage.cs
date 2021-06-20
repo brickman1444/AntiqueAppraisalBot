@@ -25,6 +25,8 @@ namespace AppraisalBot
                 "Neverland",
                 TestUtils.GetDeterministicRandom());
 
+            Program.SaveTestImage(actualImage, "actual/composedWithCaption.jpg");
+
             Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "expected/composedWithCaption.jpg");
 
             TestUtils.AssertImagesAreTheSame(expectedImage, actualImage);

@@ -41,15 +41,20 @@ namespace AppraisalBot
                     PixelColor aPixel = aSpan[x];
                     PixelColor bPixel = bSpan[x];
 
-                    int pixelDistance = GetManhattanDistanceInRgbaSpace(ref aPixel, ref bPixel);
-
-                    float pixelDifference = pixelDistance / (256.0f * 4.0f);
+                    float pixelDifference = GetPixelDifference(ref aPixel, ref bPixel);
 
                     amountOfPixelDifference += pixelDifference;
                 }
             }
 
             return amountOfPixelDifference / totalPixels;
+        }
+
+        public static float GetPixelDifference(ref PixelColor a, ref PixelColor b)
+        {
+            float pixelDistance = GetManhattanDistanceInRgbaSpace(ref a, ref b);
+
+            return pixelDistance / (255.0f * 4.0f);
         }
 
         private static int GetManhattanDistanceInRgbaSpace(ref PixelColor a, ref PixelColor b)
