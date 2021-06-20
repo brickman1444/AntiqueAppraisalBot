@@ -574,9 +574,13 @@ namespace AppraisalBot
             }
         }
 
-        public static void SaveTestImage(Bitmap image, string fileName)
+        public static void SaveTestImage(Bitmap image, string filePath)
         {
-            image.Save("../../../testArt/" + fileName);
+            string fullPath = "../../../testArt/" + filePath;
+
+            Directory.CreateDirectory(Directory.GetParent(fullPath).FullName);
+
+            image.Save(fullPath);
         }
 
         public static bool IsRunningTests()

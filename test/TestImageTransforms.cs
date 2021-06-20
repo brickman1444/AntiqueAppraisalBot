@@ -46,7 +46,7 @@ namespace AppraisalBot
         public static void TransformImageAcceptanceTest()
         {
             Bitmap actualImage = TestImageTransformUtils.TransformImage();
-            Program.SaveTestImage(actualImage, "perspectiveTransformActual.jpg");
+            Program.SaveTestImage(actualImage, "actual/perspectiveTransform.jpg");
 
             Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransformExpected.jpg");
 
@@ -58,7 +58,7 @@ namespace AppraisalBot
         {
             Bitmap actualImage = TestImageTransformUtils.ComposeOntoBackground();
 
-            Program.SaveTestImage(actualImage, "composedImageActual.jpg");
+            Program.SaveTestImage(actualImage, "actual/composedImage.jpg");
 
             Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "composedImageExpected.jpg");
 
