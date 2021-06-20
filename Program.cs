@@ -62,11 +62,7 @@ namespace AppraisalBot
                 return 1;
             }
 
-            if (executionArguments[0] == "update-expected-acceptance-test-output")
-            {
-                UpdateExpectedAcceptanceTestOutput.Run();
-            }
-            else if (executionArguments[0] == "create-random-local-appraisals")
+            if (executionArguments[0] == "create-random-local-appraisals")
             {
                 DeletePreviousOutput();
 
