@@ -7,15 +7,6 @@ namespace AppraisalBot
 {
     public static class TestImageTransformUtils
     {
-        public static void UpdateExpectedOutput()
-        {
-            Bitmap perspectiveTransformExpected = TransformImage();
-            perspectiveTransformExpected.Save(@"testArt/perspectiveTransformExpected.jpg");
-
-            Bitmap composedExpected = ComposeOntoBackground();
-            composedExpected.Save(@"testArt/composedImageExpected.jpg");
-        }
-
         public static Bitmap TransformImage()
         {
             Bitmap sourceImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransformSource.jpg");
@@ -48,7 +39,7 @@ namespace AppraisalBot
             Bitmap actualImage = TestImageTransformUtils.TransformImage();
             Program.SaveTestImage(actualImage, "actual/perspectiveTransform.jpg");
 
-            Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "perspectiveTransformExpected.jpg");
+            Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "expected/perspectiveTransform.jpg");
 
             TestUtils.AssertImagesAreTheSame(expectedImage, actualImage);
         }
@@ -60,7 +51,7 @@ namespace AppraisalBot
 
             Program.SaveTestImage(actualImage, "actual/composedImage.jpg");
 
-            Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "composedImageExpected.jpg");
+            Bitmap expectedImage = Program.LoadImage(Program.LoadImageType.Test, "expected/composedImage.jpg");
 
             TestUtils.AssertImagesAreTheSame(expectedImage, actualImage);
         }

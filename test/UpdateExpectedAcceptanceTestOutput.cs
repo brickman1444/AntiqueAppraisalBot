@@ -5,7 +5,6 @@ namespace AppraisalBot
         public static void Run()
         {
             TestComposeImageUtils.UpdateExpectedOutput();
-            TestImageTransformUtils.UpdateExpectedOutput();
         }
     }
 }
