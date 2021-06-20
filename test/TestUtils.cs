@@ -18,10 +18,10 @@ namespace AppraisalBot
         public static void AssertImagesAreTheSame(Bitmap imageA, Bitmap imageB)
         {
             float percentDifference = GetPercentDifference(imageA, imageB);
-            Assert.InRange(percentDifference, 0.0f, 0.01f);
+            Assert.InRange(percentDifference, 0.0f, 0.001f);
         }
 
-        public static float GetPercentDifference(Bitmap imageA, Bitmap imageB)
+        public static float GetPercentDifference(Bitmap imageA, Bitmap imageB, float perPixelThreshold = 0.02f)
         {
             if (imageA.Height != imageB.Height || imageA.Width != imageB.Width)
             {
@@ -43,7 +43,10 @@ namespace AppraisalBot
 
                     float pixelDifference = GetPixelDifference(ref aPixel, ref bPixel);
 
-                    amountOfPixelDifference += pixelDifference;
+                    if (pixelDifference >= perPixelThreshold)
+                    {
+                        amountOfPixelDifference += pixelDifference;
+                    }
                 }
             }
 
