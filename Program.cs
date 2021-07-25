@@ -590,12 +590,20 @@ namespace AppraisalBot
             }
             catch (SixLabors.Fonts.Exceptions.FontFamilyNotFoundException)
             {
-                Amazon.S3.AmazonS3Client client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.USEast2);
-                Amazon.S3.Model.GetObjectResponse response = client.GetObjectAsync("appraisal-bot", "DejaVuSans.ttf").GetAwaiter().GetResult();
+                using (Amazon.S3.AmazonS3Client client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.USEast2))
+                using (Amazon.S3.Model.GetObjectResponse response = client.GetObjectAsync("appraisal-bot", "DejaVuSans.ttf").GetAwaiter().GetResult())
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    // ResponseStream is a HashStream which doesn't support Seeking
+                    // which is required to install a font. So first we copy the 
+                    // data to a MemoryStream which does support seeking.
+                    response.ResponseStream.CopyTo(memoryStream);
+                    memoryStream.Seek(0, SeekOrigin.Begin);
 
-                FontCollection fonts = new FontCollection();
-                FontFamily font = fonts.Install(response.ResponseStream);
-                return font;
+                    FontCollection fonts = new FontCollection();
+                    FontFamily font = fonts.Install(memoryStream);
+                    return font;
+                }
             }
         }
 
