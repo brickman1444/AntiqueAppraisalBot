@@ -514,7 +514,7 @@ namespace AppraisalBot
 
         static void PrintSystemFonts()
         {
-            System.Collections.Generic.IEnumerable<FontFamily> families = SystemFonts.Families;
+            System.Collections.Generic.IEnumerable<FontFamily> families = SystemFonts.Collection.Families;
             IOrderedEnumerable<FontFamily> orderd = families.OrderBy(x => x.Name);
             int len = families.Max(x => x.Name.Length);
             foreach (FontFamily f in orderd)
