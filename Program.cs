@@ -86,6 +86,10 @@ namespace AppraisalBot
             {
                 TestLoadEveryImage.Run();
             }
+            else if (executionArguments[0] == "print-system-fonts")
+            {
+                PrintSystemFonts();
+            }
             else
             {
                 Console.WriteLine("Arguments could not be matched to any handler.");
@@ -490,17 +494,6 @@ namespace AppraisalBot
 
             int fontSize = (int)(33 * scale);
 
-            // System.Collections.Generic.IEnumerable<FontFamily> families = SystemFonts.Families;
-            // IOrderedEnumerable<FontFamily> orderd = families.OrderBy(x => x.Name);
-            // int len = families.Max(x => x.Name.Length);
-            // foreach (FontFamily f in orderd)
-            // {
-            //     Console.Write(f.Name.PadRight(len));
-            //     Console.Write('\t');
-            //     Console.Write(string.Join(",", f.AvailibleStyles.OrderBy(x=>x).Select(x => x.ToString())));
-            //     Console.WriteLine();
-            // }
-
             FontFamily family = SystemFonts.Find("DejaVu Sans"); //assumes arial has been installed
 
             Font font = new Font(family, fontSize, FontStyle.Bold);
@@ -517,6 +510,20 @@ namespace AppraisalBot
            .DrawText(textGraphicsOptions, fullCaption, font, NamedColors.White, new PointF(textOriginX + 1, textOriginY + 1)));
 
             return drawnBitmap;
+        }
+
+        static void PrintSystemFonts()
+        {
+            System.Collections.Generic.IEnumerable<FontFamily> families = SystemFonts.Families;
+            IOrderedEnumerable<FontFamily> orderd = families.OrderBy(x => x.Name);
+            int len = families.Max(x => x.Name.Length);
+            foreach (FontFamily f in orderd)
+            {
+                Console.Write(f.Name.PadRight(len));
+                Console.Write('\t');
+                Console.Write(string.Join(",", f.AvailableStyles.OrderBy(x=>x).Select(x => x.ToString())));
+                Console.WriteLine();
+            }
         }
 
         static void TweetAppraisal(Bitmap image, string text)
