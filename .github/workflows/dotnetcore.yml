@@ -20,6 +20,9 @@ jobs:
     - name: Run Tests
       run: dotnet test
 
+    - name: Install AWS Tools
+      run: dotnet tool install -g Amazon.Lambda.Tools
+
     - name: Build Lambda package
       run: dotnet lambda package --configuration Release --framework netcoreapp3.1 --output-package bin/Release/netcoreapp3.1/AntiqueAppraisalBot.zip
 
