@@ -86,9 +86,13 @@ namespace AppraisalBot
             {
                 TestLoadEveryImage.Run();
             }
-            else if (executionArguments[0] == "print-system-fonts")
+            else if (executionArguments[0] == "test-caption-font")
             {
-                PrintSystemFonts();
+                FontFamily font = GetCaptionFontFamily();
+                if (font == null)
+                {
+                    throw new Exception("Caption font was null");
+                }
             }
             else
             {
@@ -494,7 +498,7 @@ namespace AppraisalBot
 
             int fontSize = (int)(33 * scale);
 
-            FontFamily family = SystemFonts.Find("DejaVu Sans"); //assumes arial has been installed
+            FontFamily family = GetCaptionFontFamily();
 
             Font font = new Font(family, fontSize, FontStyle.Bold);
 
@@ -514,6 +518,7 @@ namespace AppraisalBot
 
         static void PrintSystemFonts()
         {
+            var collection = new SixLabors.Fonts.FontCollection();
             System.Collections.Generic.IEnumerable<FontFamily> families = SystemFonts.Collection.Families;
             IOrderedEnumerable<FontFamily> orderd = families.OrderBy(x => x.Name);
             int len = families.Max(x => x.Name.Length);
@@ -574,6 +579,23 @@ namespace AppraisalBot
                     Amazon.S3.Model.GetObjectResponse response = client.GetObjectAsync("appraisal-bot", fileName).GetAwaiter().GetResult();
                     return Image.Load<PixelColor>(response.ResponseStream);
                 }
+            }
+        }
+
+        public static FontFamily GetCaptionFontFamily()
+        {
+            try
+            {
+                return SystemFonts.Find("DejaVu Sans");
+            }
+            catch (SixLabors.Fonts.Exceptions.FontFamilyNotFoundException)
+            {
+                Amazon.S3.AmazonS3Client client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.USEast2);
+                Amazon.S3.Model.GetObjectResponse response = client.GetObjectAsync("appraisal-bot", "DejaVuSans.ttf").GetAwaiter().GetResult();
+
+                FontCollection fonts = new FontCollection();
+                FontFamily font = fonts.Install(response.ResponseStream);
+                return font;
             }
         }
 
